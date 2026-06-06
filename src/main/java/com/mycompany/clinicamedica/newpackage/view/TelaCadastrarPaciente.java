@@ -1,13 +1,14 @@
-package com.mycompany.clinicamedica.newpackage.view; // <-- Ajustado para o seu pacote real!
+package com.mycompany.clinicamedica.newpackage.view;
 
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import Services.Paciente;
+import Services.PacienteDAO;
 
 public class TelaCadastrarPaciente extends JFrame {
 
-    // Campos do Formulário
     private JTextField txtNome, txtCPF, txtTelefone, txtNascimento, txtEndereco;
     private JComboBox<String> cbSexo;
     private JButton btnSalvar, btnLimpar, btnVoltar;
@@ -19,29 +20,23 @@ public class TelaCadastrarPaciente extends JFrame {
         setLocationRelativeTo(null);
         setResizable(false);
 
-        // PALETA DE CORES TERROSAS DO SEU PROJETO
-        Color corCremeClaro   = new Color(251, 251, 250); // #FBFBFA
-        Color corDestaqueGold = new Color(193, 158, 103); // #C19E67
-        Color corTomMedio     = new Color(110, 102, 95);  // #6E665F
-        Color corRotuloCinza  = new Color(180, 169, 158); // #B4A99E
-        Color corMarromEscuro = new Color(61, 28, 6);     // #3D1C06
+        Color corCremeClaro   = new Color(251, 251, 250);
+        Color corDestaqueGold = new Color(193, 158, 103);
+        Color corTomMedio     = new Color(110, 102, 95);
+        Color corRotuloCinza  = new Color(180, 169, 158);
+        Color corMarromEscuro = new Color(61, 28, 6);
 
-        // Painel de Fundo
         JPanel painelFundo = new JPanel();
         painelFundo.setBackground(corTomMedio);
         painelFundo.setLayout(null);
         setContentPane(painelFundo);
 
-        // Título da Tela
         JLabel lblTitulo = new JLabel("Cadastro de Novo Paciente");
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 32));
         lblTitulo.setForeground(corCremeClaro);
         lblTitulo.setBounds(50, 30, 500, 40);
         painelFundo.add(lblTitulo);
 
-        // ====================================================================
-        // FORMULÁRIO (Painel Central Escuro)
-        // ====================================================================
         JPanel painelForm = new JPanel();
         painelForm.setBackground(corMarromEscuro);
         painelForm.setLayout(null);
@@ -50,8 +45,7 @@ public class TelaCadastrarPaciente extends JFrame {
         painelFundo.add(painelForm);
 
         Font fonteLabel = new Font("Segoe UI", Font.PLAIN, 14);
-        
-        // --- Linha 1: Nome Completo ---
+
         JLabel lblNome = new JLabel("Nome Completo:");
         lblNome.setFont(fonteLabel);
         lblNome.setForeground(corRotuloCinza);
@@ -62,7 +56,6 @@ public class TelaCadastrarPaciente extends JFrame {
         txtNome.setBounds(40, 55, 700, 35);
         painelForm.add(txtNome);
 
-        // --- Linha 2: CPF e Telefone ---
         JLabel lblCPF = new JLabel("CPF:");
         lblCPF.setFont(fonteLabel);
         lblCPF.setForeground(corRotuloCinza);
@@ -83,7 +76,6 @@ public class TelaCadastrarPaciente extends JFrame {
         txtTelefone.setBounds(410, 135, 330, 35);
         painelForm.add(txtTelefone);
 
-        // --- Linha 3: Data Nascimento e Sexo ---
         JLabel lblNasc = new JLabel("Data de Nascimento:");
         lblNasc.setFont(fonteLabel);
         lblNasc.setForeground(corRotuloCinza);
@@ -107,7 +99,6 @@ public class TelaCadastrarPaciente extends JFrame {
         cbSexo.setBorder(new LineBorder(corDestaqueGold, 1));
         painelForm.add(cbSexo);
 
-        // --- Linha 4: Endereço ---
         JLabel lblEnd = new JLabel("Endereço Residencial:");
         lblEnd.setFont(fonteLabel);
         lblEnd.setForeground(corRotuloCinza);
@@ -118,9 +109,6 @@ public class TelaCadastrarPaciente extends JFrame {
         txtEndereco.setBounds(40, 295, 700, 35);
         painelForm.add(txtEndereco);
 
-        // ====================================================================
-        // BOTÕES DE AÇÃO DO FORMULÁRIO
-        // ====================================================================
         btnSalvar = new JButton("Salvar Cadastro");
         btnSalvar.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnSalvar.setBackground(corDestaqueGold);
@@ -141,7 +129,6 @@ public class TelaCadastrarPaciente extends JFrame {
         btnLimpar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         painelForm.add(btnLimpar);
 
-        // Botão Voltar (Alocado na parte inferior esquerda externa)
         btnVoltar = new JButton("← Voltar ao Menu");
         btnVoltar.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnVoltar.setBackground(new Color(180, 70, 70));
@@ -152,16 +139,9 @@ public class TelaCadastrarPaciente extends JFrame {
         painelFundo.add(btnVoltar);
 
         // ====================================================================
-        // COMPORTAMENTO / EVENTOS
+        // EVENTOS
         // ====================================================================
-        btnSalvar.addActionListener(e -> {
-            if(txtNome.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, insira o nome completo do paciente.", "Erro", JOptionPane.ERROR_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(this, "Paciente " + txtNome.getText() + " gravado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                this.dispose();
-            }
-        });
+        btnSalvar.addActionListener(e -> salvarPaciente());
 
         btnLimpar.addActionListener(e -> {
             txtNome.setText("");
@@ -175,9 +155,41 @@ public class TelaCadastrarPaciente extends JFrame {
         btnVoltar.addActionListener(e -> this.dispose());
     }
 
-    /**
-     * Auxiliar técnico para padronizar os campos de inserção sem erros
-     */
+    // ====================================================================
+    // MÉTODO DE SALVAR — aqui é onde os getters/setters entram
+    // ====================================================================
+    private void salvarPaciente() {
+        // Validação básica
+        if (txtNome.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, 
+                "Por favor, insira o nome completo do paciente.", 
+                "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (cbSexo.getSelectedIndex() == 0) {
+            JOptionPane.showMessageDialog(this, 
+                "Por favor, selecione o sexo do paciente.", 
+                "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Monta o objeto Paciente com os dados da tela
+        Paciente paciente = new Paciente();
+        paciente.setNome(txtNome.getText().trim());
+        paciente.setCpf(txtCPF.getText().trim());
+        paciente.setTelefone(txtTelefone.getText().trim());
+        paciente.setDataNascimento(txtNascimento.getText().trim());
+        paciente.setEndereco(txtEndereco.getText().trim());
+        paciente.setSexo(cbSexo.getSelectedItem().toString());
+
+        // Por enquanto exibe confirmação — depois aqui vai o DAO
+        PacienteDAO dao = new PacienteDAO();
+        dao.inserir(paciente);
+
+        this.dispose();
+    }
+
     private JTextField criarCampoTexto(Color fundo, Color texto) {
         JTextField campo = new JTextField();
         campo.setBackground(fundo);
@@ -196,8 +208,6 @@ public class TelaCadastrarPaciente extends JFrame {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {}
 
-        SwingUtilities.invokeLater(() -> {
-            new TelaCadastrarPaciente().setVisible(true);
-        });
+        SwingUtilities.invokeLater(() -> new TelaCadastrarPaciente().setVisible(true));
     }
 }
