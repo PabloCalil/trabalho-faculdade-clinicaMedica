@@ -1,139 +1,104 @@
-package com.mycompany.clinicamedica.newpackage.view; // <-- Ajustado estritamente para a sua árvore de ficheiros!
+package com.mycompany.clinicamedica.newpackage.view;
 
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.table.DefaultTableModel;
 
 public class TelaSecretaria extends JFrame {
-
-    private JButton btnCadastrarPaciente;
-    private JButton btnConsultarPaciente;
-    private JButton btnMarcarConsulta;
-    private JButton btnConsultarConsultas;
-    private JButton btnVoltar;
-
     public TelaSecretaria() {
-        setTitle("🏥 Sistema Clínica Médica - Painel da Secretaria");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(1100, 680);
+        setTitle("VITA — Painel de Recepção e Atendimento");
+        setSize(1024, 640);
         setLocationRelativeTo(null);
-        setResizable(false);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        // PALETA DE CORES TERROSAS VALIDADAS
-        Color corCremeClaro   = new Color(251, 251, 250); // #FBFBFA
-        Color corDestaqueGold = new Color(193, 158, 103); // #C19E67
-        Color corTomMedio     = new Color(110, 102, 95);  // #6E665F
-        Color corRotuloCinza  = new Color(180, 169, 158); // #B4A99E
-        Color corMarromEscuro = new Color(61, 28, 6);     // #3D1C06
+        Color marromEscuro = new Color(61, 28, 6);
+        Color corGold      = new Color(193, 158, 103);
+        Color fundoClaro   = new Color(244, 241, 234);
 
-        // Painel Principal
-        JPanel painelFundo = new JPanel();
-        painelFundo.setBackground(corTomMedio);
-        painelFundo.setLayout(null);
-        setContentPane(painelFundo);
+        JPanel principal = new JPanel(new BorderLayout());
+        principal.setBackground(fundoClaro);
+        setContentPane(principal);
 
-        // Cabeçalho institucional
-        JLabel lblTitulo = new JLabel("Painel de Controle Administrativo");
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 36));
-        lblTitulo.setForeground(corCremeClaro);
-        lblTitulo.setBounds(60, 40, 600, 50);
-        painelFundo.add(lblTitulo);
+        // --- HEADER SECRETÁRIA ---
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(marromEscuro);
+        header.setBorder(new EmptyBorder(20, 40, 20, 40));
 
-        JLabel lblSubtitulo = new JLabel("Módulo da Secretaria — Gerenciamento e Atendimento");
-        lblSubtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        lblSubtitulo.setForeground(corRotuloCinza);
-        lblSubtitulo.setBounds(60, 90, 500, 25);
-        painelFundo.add(lblSubtitulo);
+        JLabel lblTitulo = new JLabel("Atendimento e Recepção Central — VITA");
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTitulo.setForeground(Color.WHITE);
+        header.add(lblTitulo, BorderLayout.WEST);
 
-        // ====================================================================
-        // PAINEL CENTRAL DO MENU (Grade Modular)
-        // ====================================================================
-        JPanel painelMenu = new JPanel();
-        painelMenu.setBackground(corMarromEscuro);
-        painelMenu.setBorder(new LineBorder(corDestaqueGold, 2, true));
-        painelMenu.setLayout(new GridLayout(2, 2, 30, 30));
-        painelMenu.setBounds(60, 150, 960, 380);
-        
-        painelMenu.setBorder(BorderFactory.createCompoundBorder(
-                painelMenu.getBorder(), 
-                new EmptyBorder(25, 25, 25, 25)
-        ));
-        painelFundo.add(painelMenu);
-
-        // Botões do Menu em formato HTML estruturado
-        btnCadastrarPaciente = configurarBotaoMenu("<html><center><font size='6'>➕</font><br><br><b>Cadastrar Paciente</b><br><font size='3'>Inserir novas fichas no sistema</font></center></html>", corDestaqueGold, corMarromEscuro);
-        painelMenu.add(btnCadastrarPaciente);
-
-        btnConsultarPaciente = configurarBotaoMenu("<html><center><font size='6'>🔍</font><br><br><b>Consultar Paciente</b><br><font size='3'>Buscar cadastros e históricos</font></center></html>", corDestaqueGold, corMarromEscuro);
-        painelMenu.add(btnConsultarPaciente);
-
-        btnMarcarConsulta = configurarBotaoMenu("<html><center><font size='6'>📅</font><br><br><b>Marcar Consulta / Retorno</b><br><font size='3'>Agendar novos horários médicos</font></center></html>", corDestaqueGold, corMarromEscuro);
-        painelMenu.add(btnMarcarConsulta);
-
-        btnConsultarConsultas = configurarBotaoMenu("<html><center><font size='6'>📋</font><br><br><b>Consultar Consultas</b><br><font size='3'>Visualizar fluxo da agenda do dia</font></center></html>", corDestaqueGold, corMarromEscuro);
-        painelMenu.add(btnConsultarConsultas);
-
-        // Botão de Logout / Voltar
-        btnVoltar = new JButton("← Desconectar");
-        btnVoltar.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnVoltar.setBackground(new Color(180, 70, 70));
-        btnVoltar.setForeground(corCremeClaro);
-        btnVoltar.setBounds(60, 565, 180, 40);
-        btnVoltar.setFocusPainted(false);
-        btnVoltar.setBorder(new LineBorder(Color.WHITE, 1, true));
-        btnVoltar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        painelFundo.add(btnVoltar);
-
-        // ====================================================================
-        // MAPEAMENTO DOS DIRECIONAMENTOS (Caminhos Corretos)
-        // ====================================================================
-        
-        // 1. Aponta para TelaCadastrarPaciente
-        btnCadastrarPaciente.addActionListener(e -> {
-            new TelaCadastrarPaciente().setVisible(true);
+        JButton btnSair = new JButton("Logout");
+        btnSair.setBackground(new Color(180, 70, 70));
+        btnSair.setForeground(Color.WHITE);
+        btnSair.setFocusPainted(false);
+        btnSair.addActionListener(e -> {
+            this.dispose();
+            new TelaLogin().setVisible(true);
         });
+        header.add(btnSair, BorderLayout.EAST);
+        principal.add(header, BorderLayout.NORTH);
 
-        // 2. Aponta para TelaConsultarPaciente
-        btnConsultarPaciente.addActionListener(e -> {
-            new TelaConsultarPaciente().setVisible(true);
-        });
+        // --- CORPO OPERACIONAL ---
+        JPanel corpo = new JPanel(new BorderLayout(30, 0));
+        corpo.setBackground(fundoClaro);
+        corpo.setBorder(new EmptyBorder(30, 40, 30, 40));
 
-        // 3. Aponta para TelaAgendarConsulta
-        btnMarcarConsulta.addActionListener(e -> {
-            new TelaAgendarConsulta().setVisible(true);
-        });
+        // Lateral de Ações Rápidas
+        JPanel menuAcoes = new JPanel(new GridLayout(4, 1, 0, 20));
+        menuAcoes.setBackground(fundoClaro);
+        menuAcoes.setPreferredSize(new Dimension(280, 0));
 
-        // 4. Fluxo da Agenda do Dia
-        // Procure e altere para este na sua TelaSecretaria.java:
-        btnConsultarConsultas.addActionListener(e -> {
-            new TelaConsultarConsultas().setVisible(true);
-        });
+        JButton btnNovoPac = criarBotaoRecepcao("👤 Cadastrar Novo Paciente");
+        JButton btnAgendar = criarBotaoRecepcao("📅 Agendar Nova Consulta");
+        JButton btnCheckin = criarBotaoRecepcao("✅ Confirmar Presença (Check-in)");
+        JButton btnMedicos = criarBotaoRecepcao("🩺 Consultar Escala Médica");
+
+        menuAcoes.add(btnNovoPac); menuAcoes.add(btnAgendar); menuAcoes.add(btnCheckin); menuAcoes.add(btnMedicos);
+        corpo.add(menuAcoes, BorderLayout.WEST);
+
+        // Central: Visualizador da Agenda Ativa
+        JPanel pnlAgenda = new JPanel(new BorderLayout(0, 10));
+        pnlAgenda.setBackground(fundoClaro);
         
-        
-        btnVoltar.addActionListener(e -> this.dispose());
+        JLabel lblAgenda = new JLabel("Grade Geral de Consultas Ativas / Monitoramento:");
+        lblAgenda.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblAgenda.setForeground(marromEscuro);
+        pnlAgenda.add(lblAgenda, BorderLayout.NORTH);
+
+        String[] colunas = {"Paciente", "Médico / Especialidade", "Horário", "Status Fila"};
+        DefaultTableModel modelo = new DefaultTableModel(colunas, 0);
+        modelo.addRow(new Object[]{"Carlos Augusto Silva", "Dr. Medico (Clínico Geral)", "08:30", "Em Atendimento"});
+        modelo.addRow(new Object[]{"Mariana Costa Souza", "Dr. Medico (Clínico Geral)", "09:15", "Aguardando"});
+        modelo.addRow(new Object[]{"Alice Vieira Ramos", "Dra. Ana (Pediatria)", "10:30", "Agendado"});
+
+        JTable tabela = new JTable(modelo);
+        tabela.setRowHeight(30);
+        JScrollPane scroll = new JScrollPane(tabela);
+        scroll.setBorder(new LineBorder(corGold));
+        pnlAgenda.add(scroll, BorderLayout.CENTER);
+
+        corpo.add(pnlAgenda, BorderLayout.CENTER);
+        principal.add(corpo, BorderLayout.CENTER);
+
+        // Cliques das Funções
+        btnNovoPac.addActionListener(e -> JOptionPane.showMessageDialog(this, "Redirecionando para a ficha de cadastro de prontuário físico de paciente..."));
+        btnAgendar.addActionListener(e -> JOptionPane.showMessageDialog(this, "Abrindo calendário mestre para bloqueio de horários clínicos..."));
+        btnCheckin.addActionListener(e -> JOptionPane.showMessageDialog(this, "Disparando atualização de status do paciente para a sala do médico!"));
+        btnMedicos.addActionListener(e -> JOptionPane.showMessageDialog(this, "Exibindo corpo de médicos ativos e especialidades integradas..."));
     }
 
-    private JButton configurarBotaoMenu(String textoHTML, Color fundo, Color texto) {
-        JButton botao = new JButton(textoHTML);
-        botao.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        botao.setBackground(fundo);
-        botao.setForeground(texto);
-        botao.setFocusPainted(false);
-        botao.setBorder(new LineBorder(fundo.darker(), 1, true));
-        botao.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return botao;
-    }
-
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        SwingUtilities.invokeLater(() -> {
-            new TelaSecretaria().setVisible(true);
-        });
+    private JButton criarBotaoRecepcao(String texto) {
+        JButton b = new JButton(texto);
+        b.setBackground(new Color(61, 28, 6));
+        b.setForeground(Color.WHITE);
+        b.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        b.setBorder(new LineBorder(new Color(193, 158, 103), 1, true));
+        b.setFocusPainted(false);
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return b;
     }
 }

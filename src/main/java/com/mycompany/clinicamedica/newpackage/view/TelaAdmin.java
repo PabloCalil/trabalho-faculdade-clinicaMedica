@@ -1,4 +1,4 @@
-package com.mycompany.clinicamedica.newpackage.view; // <-- Alinhado estritamente com a sua árvore!
+package com.mycompany.clinicamedica.newpackage.view;
 
 import java.awt.*;
 import javax.swing.*;
@@ -6,129 +6,80 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 public class TelaAdmin extends JFrame {
-
-    private JButton btnGerenciarUsuarios;
-    private JButton btnRelatoriosFinanceiros;
-    private JButton btnConfiguracoes;
-    private JButton btnLogsAuditoria;
-    private JButton btnVoltar;
+    private Color marromEscuro = new Color(61, 28, 6);
+    private Color corGold      = new Color(193, 158, 103);
+    private Color fundoClaro   = new Color(244, 241, 234);
+    private Color textoEscuro  = new Color(44, 37, 32);
 
     public TelaAdmin() {
-        setTitle("🏥 Sistema Clínica Médica - Painel do Administrador");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(1100, 680);
+        setTitle("VITA v2.0 - Painel Administrativo");
+        setSize(1024, 640);
         setLocationRelativeTo(null);
-        setResizable(false);
-
-        // PALETA DE CORES TERROSAS PADRONIZADA DO PROJETO
-        Color corCremeClaro   = new Color(251, 251, 250); // #FBFBFA
-        Color corDestaqueGold = new Color(193, 158, 103); // #C19E67
-        Color corTomMedio     = new Color(110, 102, 95);  // #6E665F
-        Color corRotuloCinza  = new Color(180, 169, 158); // #B4A99E
-        Color corMarromEscuro = new Color(61, 28, 6);     // #3D1C06
-
-        // Painel Principal
-        JPanel painelFundo = new JPanel();
-        painelFundo.setBackground(corTomMedio);
-        painelFundo.setLayout(null);
-        setContentPane(painelFundo);
-
-        // Cabeçalho Administrativo
-        JLabel lblTitulo = new JLabel("Painel de Controle do Administrador");
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 36));
-        lblTitulo.setForeground(corCremeClaro);
-        lblTitulo.setBounds(60, 40, 700, 50);
-        painelFundo.add(lblTitulo);
-
-        JLabel lblSubtitulo = new JLabel("Módulo Master — Gestão de Pessoal, Finanças, Segurança e Infraestrutura");
-        lblSubtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        lblSubtitulo.setForeground(corRotuloCinza);
-        lblSubtitulo.setBounds(60, 90, 650, 25);
-        painelFundo.add(lblSubtitulo);
-
-        // ====================================================================
-        // PAINEL CENTRAL DO MENU (Grade Modular)
-        // ====================================================================
-        JPanel painelMenu = new JPanel();
-        painelMenu.setBackground(corMarromEscuro);
-        painelMenu.setBorder(new LineBorder(corDestaqueGold, 2, true));
-        painelMenu.setLayout(new GridLayout(2, 2, 30, 30));
-        painelMenu.setBounds(60, 150, 960, 380);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         
-        painelMenu.setBorder(BorderFactory.createCompoundBorder(
-                painelMenu.getBorder(), 
-                new EmptyBorder(25, 25, 25, 25)
+        JPanel painelPrincipal = new JPanel(new BorderLayout());
+        painelPrincipal.setBackground(fundoClaro);
+        setContentPane(painelPrincipal);
+
+        // --- TOPO/HEADER ---
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(marromEscuro);
+        header.setBorder(new EmptyBorder(20, 40, 20, 40));
+        
+        JLabel lblTitulo = new JLabel("Clínica VITA — Módulo Master");
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblTitulo.setForeground(Color.WHITE);
+        header.add(lblTitulo, BorderLayout.WEST);
+
+        JButton btnSair = new JButton("Sair do Sistema");
+        btnSair.setBackground(new Color(180, 70, 70));
+        btnSair.setForeground(Color.WHITE);
+        btnSair.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnSair.setFocusPainted(false);
+        btnSair.addActionListener(e -> {
+            this.dispose();
+            new TelaLogin().setVisible(true);
+        });
+        header.add(btnSair, BorderLayout.EAST);
+        painelPrincipal.add(header, BorderLayout.NORTH);
+
+        // --- MENU INTERNO ---
+        JPanel gridMenu = new JPanel(new GridLayout(2, 2, 25, 25));
+        gridMenu.setBackground(fundoClaro);
+        gridMenu.setBorder(new EmptyBorder(40, 40, 40, 40));
+
+        JButton btnUser = criarCardBotao("<html><b>👥 Gestão de Usuários</b><br><font size='3' color='#8C7E74'>Controle perfis, acessos e destinos</font></html>");
+        JButton btnEsp  = criarCardBotao("<html><b>⚙️ Especialidades Clínicas</b><br><font size='3' color='#8C7E74'>Gerencie as áreas de atendimento médico</font></html>");
+        JButton btnFin  = criarCardBotao("<html><b>📊 Relatórios Master</b><br><font size='3' color='#8C7E74'>Faturamento clínico e repasses</font></html>");
+        JButton btnLog  = criarCardBotao("<html><b>📜 Logs de Segurança</b><br><font size='3' color='#8C7E74'>Histórico e rastreio de auditoria</font></html>");
+
+        // CORRIGIDO: Adicionando um por um sem travar o layout
+        gridMenu.add(btnUser); 
+        gridMenu.add(btnEsp); 
+        gridMenu.add(btnFin); 
+        gridMenu.add(btnLog);
+        painelPrincipal.add(gridMenu, BorderLayout.CENTER);
+
+        // Ações dos botões
+        btnUser.addActionListener(e -> new TelaGerenciarUsuarios().setVisible(true));
+        btnEsp.addActionListener(e -> new TelaCadastrarEspecialidade().setVisible(true));
+        
+        btnFin.addActionListener(e -> JOptionPane.showMessageDialog(this, "Acessando relatórios financeiros...", "Módulo Financeiro", JOptionPane.INFORMATION_MESSAGE));
+        btnLog.addActionListener(e -> JOptionPane.showMessageDialog(this, "Exibindo trilhas de auditoria...", "Segurança", JOptionPane.INFORMATION_MESSAGE));
+    }
+
+    private JButton criarCardBotao(String texto) {
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        btn.setHorizontalAlignment(SwingConstants.LEFT);
+        btn.setBorder(BorderFactory.createCompoundBorder(
+            new LineBorder(corGold, 1, true),
+            new EmptyBorder(20, 30, 20, 30)
         ));
-        painelFundo.add(painelMenu);
-
-        // Botões do Menu Administrativo (HTML nativo seguro para compilação Maven)
-        btnGerenciarUsuarios = configurarBotaoMenu("<html><center><font size='6'>👥</font><br><br><b>Gerenciar Usuários</b><br><font size='3'>Controlar acessos de Médicos e Secretárias</font></center></html>", corDestaqueGold, corMarromEscuro);
-        painelMenu.add(btnGerenciarUsuarios);
-
-        btnRelatoriosFinanceiros = configurarBotaoMenu("<html><center><font size='6'>📊</font><br><br><b>Relatórios & Finanças</b><br><font size='3'>Auditar faturamento e guias de convênio</font></center></html>", corDestaqueGold, corMarromEscuro);
-        painelMenu.add(btnRelatoriosFinanceiros);
-
-        btnConfiguracoes = configurarBotaoMenu("<html><center><font size='6'>⚙️</font><br><br><b>Configurações Gerais</b><br><font size='3'>Gerenciar Backups e parâmetros do sistema</font></center></html>", corDestaqueGold, corMarromEscuro);
-        painelMenu.add(btnConfiguracoes);
-
-        btnLogsAuditoria = configurarBotaoMenu("<html><center><font size='6'>📜</font><br><br><b>Logs de Auditoria</b><br><font size='3'>Rastrear ações e histórico de segurança</font></center></html>", corDestaqueGold, corMarromEscuro);
-        painelMenu.add(btnLogsAuditoria);
-
-        // Botão de Saída
-        btnVoltar = new JButton("← Desconectar");
-        btnVoltar.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnVoltar.setBackground(new Color(180, 70, 70));
-        btnVoltar.setForeground(corCremeClaro);
-        btnVoltar.setBounds(60, 565, 180, 40);
-        btnVoltar.setFocusPainted(false);
-        btnVoltar.setBorder(new LineBorder(Color.WHITE, 1, true));
-        btnVoltar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        painelFundo.add(btnVoltar);
-
-        // ====================================================================
-        // COMPORTAMENTOS / EVENTOS DOS BOTÕES
-        // ====================================================================
-        
-        // Procure e altere essa ação dentro da sua TelaAdministrador.java:
-btnGerenciarUsuarios.addActionListener(e -> {
-    new TelaGerenciarUsuarios().setVisible(true);
-});
-
-        btnRelatoriosFinanceiros.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Gerando gráficos corporativos de faturamento e fluxo mensal.", "Inteligência Financeira", JOptionPane.INFORMATION_MESSAGE);
-        });
-
-        btnConfiguracoes.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Acessando diretórios de banco de dados e rotinas de Backup.", "Infraestrutura de TI", JOptionPane.INFORMATION_MESSAGE);
-        });
-
-        btnLogsAuditoria.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Exibindo registro histórico de modificações e acessos dos usuários.", "Auditoria de Segurança", JOptionPane.INFORMATION_MESSAGE);
-        });
-        
-        btnVoltar.addActionListener(e -> this.dispose());
-    }
-
-    private JButton configurarBotaoMenu(String textoHTML, Color fundo, Color texto) {
-        JButton botao = new JButton(textoHTML);
-        botao.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        botao.setBackground(fundo);
-        botao.setForeground(texto);
-        botao.setFocusPainted(false);
-        botao.setBorder(new LineBorder(fundo.darker(), 1, true));
-        botao.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return botao;
-    }
-
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        SwingUtilities.invokeLater(() -> {
-            new TelaAdmin().setVisible(true);
-        });
+        btn.setBackground(Color.WHITE);
+        btn.setForeground(textoEscuro);
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return btn;
     }
 }

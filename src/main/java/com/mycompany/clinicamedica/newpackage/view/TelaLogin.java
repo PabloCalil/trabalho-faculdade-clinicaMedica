@@ -1,170 +1,146 @@
-package com.mycompany.clinicamedica.newpackage.view; // <-- Ajustado para a sua árvore de arquivos!
+package com.mycompany.clinicamedica.newpackage.view;
 
 import java.awt.*;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 public class TelaLogin extends JFrame {
-
-    private JTextField txtUsuario;
-    private JPasswordField txtSenha;
-    private JButton btnLogin;
+    private JTextField txtUser;
+    private JPasswordField txtPass;
 
     public TelaLogin() {
-        setTitle("🏥 Sistema Clínica Médica - Autenticação");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(850, 580);
+        // Configurações básicas da janela estruturada
+        setTitle("VITA v2.0 - Autenticação Corporativa");
+        setSize(460, 560);
         setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
 
-        // PALETA DE CORES TERROSAS PADRONIZADA DO PROJETO
-        Color corCremeClaro   = new Color(251, 251, 250); // #FBFBFA
-        Color corDestaqueGold = new Color(193, 158, 103); // #C19E67
-        Color corTomMedio     = new Color(110, 102, 95);  // #6E665F
-        Color corRotuloCinza  = new Color(180, 169, 158); // #B4A99E
-        Color corMarromEscuro = new Color(61, 28, 6);     // #3D1C06
+        // Paleta de Cores Premium (Marrom e Dourado VITA)
+        Color marromEscuro  = new Color(61, 28, 6);
+        Color corGold       = new Color(193, 158, 103);
+        Color campoFundo    = new Color(110, 102, 95);
 
-        // Painel Principal dividindo a tela (Design Moderno de Duas Colunas)
-        JPanel painelFundo = new JPanel();
-        painelFundo.setBackground(corTomMedio);
-        painelFundo.setLayout(null);
-        setContentPane(painelFundo);
+        // Painel Principal em Layout Absoluto para fixação de componentes
+        JPanel p = new JPanel(null);
+        p.setBackground(marromEscuro);
+        setContentPane(p);
 
-        // ====================================================================
-        // PAINEL ESQUERDO (Apresentação Visual / Conceito)
-        // ====================================================================
-        JPanel painelEsquerdo = new JPanel();
-        painelEsquerdo.setBackground(corMarromEscuro);
-        painelEsquerdo.setBounds(0, 0, 400, 580);
-        painelEsquerdo.setLayout(null);
-        painelEsquerdo.setBorder(new LineBorder(corDestaqueGold, 1));
-        painelFundo.add(painelEsquerdo);
+        // --- PAINEL DO CABEÇALHO ---
+        JPanel pnlHeader = new JPanel(null);
+        pnlHeader.setBounds(0, 0, 460, 120);
+        pnlHeader.setBackground(new Color(43, 19, 4)); 
+        pnlHeader.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, corGold));
+        p.add(pnlHeader);
 
-        JLabel lblLogoIcone = new JLabel("🏥");
-        lblLogoIcone.setFont(new Font("Segoe UI", Font.PLAIN, 70));
-        lblLogoIcone.setHorizontalAlignment(SwingConstants.CENTER);
-        lblLogoIcone.setBounds(100, 150, 200, 80);
-        painelEsquerdo.add(lblLogoIcone);
+        JLabel lblLogo = new JLabel("V I T A", SwingConstants.CENTER);
+        lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        lblLogo.setForeground(corGold);
+        lblLogo.setBounds(0, 25, 460, 40);
+        pnlHeader.add(lblLogo);
 
-        JLabel lblNomeClinica = new JLabel("Butões de Lavanda");
-        lblNomeClinica.setFont(new Font("Segoe UI", Font.BOLD, 36));
-        lblNomeClinica.setForeground(corDestaqueGold);
-        lblNomeClinica.setHorizontalAlignment(SwingConstants.CENTER);
-        lblNomeClinica.setBounds(50, 240, 300, 45);
-        painelEsquerdo.add(lblNomeClinica);
+        JLabel lblSub = new JLabel("CLÍNICA MÉDICA PREMIUM", SwingConstants.CENTER);
+        lblSub.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        lblSub.setForeground(Color.LIGHT_GRAY);
+        lblSub.setBounds(0, 65, 460, 20);
+        pnlHeader.add(lblSub);
 
-        JLabel lblSubClinica = new JLabel("Centro de Atendimento Médico");
-        lblSubClinica.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        lblSubClinica.setForeground(corCremeClaro);
-        lblSubClinica.setHorizontalAlignment(SwingConstants.CENTER);
-        lblSubClinica.setBounds(50, 290, 300, 20);
-        painelEsquerdo.add(lblSubClinica);
+        // --- CAMPO: USUÁRIO ---
+        JLabel l1 = new JLabel("Usuário / Operador:");
+        l1.setForeground(Color.LIGHT_GRAY);
+        l1.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        l1.setBounds(45, 160, 360, 20);
+        p.add(l1);
 
-        // ====================================================================
-        // PAINEL DIREITO (Formulário de Acesso)
-        // ====================================================================
-        JLabel lblBoasVindas = new JLabel("Sign In");
-        lblBoasVindas.setFont(new Font("Segoe UI", Font.BOLD, 32));
-        lblBoasVindas.setForeground(corCremeClaro);
-        lblBoasVindas.setBounds(460, 60, 200, 40);
-        painelFundo.add(lblBoasVindas);
-
-        JLabel lblInstrucao = new JLabel("Insira suas credenciais corporativas para acessar.");
-        lblInstrucao.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        lblInstrucao.setForeground(corRotuloCinza);
-        lblInstrucao.setBounds(460, 105, 350, 20);
-        painelFundo.add(lblInstrucao);
-
-        // Campo Usuário
-        JLabel lblUsuario = new JLabel("Nome de Usuário / Identificador:");
-        lblUsuario.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        lblUsuario.setForeground(corRotuloCinza);
-        lblUsuario.setBounds(460, 160, 300, 20);
-        painelFundo.add(lblUsuario);
-
-        txtUsuario = new JTextField();
-        txtUsuario.setBounds(460, 185, 330, 40);
-        txtUsuario.setBackground(corMarromEscuro);
-        txtUsuario.setForeground(corCremeClaro);
-        txtUsuario.setCaretColor(corCremeClaro);
-        txtUsuario.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        txtUsuario.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(corDestaqueGold, 1, true),
-                new EmptyBorder(0, 10, 0, 10)
+        txtUser = new JTextField();
+        txtUser.setBounds(45, 185, 360, 40);
+        txtUser.setBackground(campoFundo);
+        txtUser.setForeground(Color.WHITE);
+        txtUser.setCaretColor(Color.WHITE);
+        txtUser.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        txtUser.setBorder(BorderFactory.createCompoundBorder(
+            new LineBorder(corGold, 1),
+            BorderFactory.createEmptyBorder(0, 10, 0, 10) // Padding interno contra travamento de texto
         ));
-        painelFundo.add(txtUsuario);
+        p.add(txtUser);
 
-        // Campo Senha
-        JLabel lblSenha = new JLabel("Senha de Acesso:");
-        lblSenha.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        lblSenha.setForeground(corRotuloCinza);
-        lblSenha.setBounds(460, 250, 200, 20);
-        painelFundo.add(lblSenha);
+        // --- CAMPO: SENHA ---
+        JLabel l2 = new JLabel("Chave de Acesso:");
+        l2.setForeground(Color.LIGHT_GRAY);
+        l2.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        l2.setBounds(45, 255, 360, 20);
+        p.add(l2);
 
-        txtSenha = new JPasswordField();
-        txtSenha.setBounds(460, 275, 330, 40);
-        txtSenha.setBackground(corMarromEscuro);
-        txtSenha.setForeground(corCremeClaro);
-        txtSenha.setCaretColor(corCremeClaro);
-        txtSenha.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(corDestaqueGold, 1, true),
-                new EmptyBorder(0, 10, 0, 10)
+        txtPass = new JPasswordField();
+        txtPass.setBounds(45, 280, 360, 40);
+        txtPass.setBackground(campoFundo);
+        txtPass.setForeground(Color.WHITE);
+        txtPass.setCaretColor(Color.WHITE);
+        txtPass.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        txtPass.setBorder(BorderFactory.createCompoundBorder(
+            new LineBorder(corGold, 1),
+            BorderFactory.createEmptyBorder(0, 10, 0, 10)
         ));
-        painelFundo.add(txtSenha);
+        p.add(txtPass);
 
-        // Botão de Entrada Seguro (Sem overrides problemáticos de mouse listener)
-        btnLogin = new JButton("SIGN IN");
-        btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnLogin.setBackground(corDestaqueGold);
-        btnLogin.setForeground(corMarromEscuro);
-        btnLogin.setBounds(460, 360, 330, 45);
-        btnLogin.setFocusPainted(false);
-        btnLogin.setBorder(new LineBorder(corDestaqueGold.darker(), 1, true));
-        btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        painelFundo.add(btnLogin);
+        // --- BOTÃO DE ENTRAR ---
+        JButton btnEntrar = new JButton("ACESSAR PAINEL");
+        btnEntrar.setBounds(45, 370, 360, 48);
+        btnEntrar.setBackground(corGold);
+        btnEntrar.setForeground(marromEscuro);
+        btnEntrar.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        btnEntrar.setFocusPainted(false);
+        btnEntrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        p.add(btnEntrar);
 
-        // Nota de Rodapé
-        JLabel lblSuporte = new JLabel("Esqueceu suas credenciais? Contate o TI.");
-        lblSuporte.setFont(new Font("Segoe UI", Font.ITALIC, 11));
-        lblSuporte.setForeground(corRotuloCinza);
-        lblSuporte.setBounds(460, 420, 300, 20);
-        painelFundo.add(lblSuporte);
+        // --- SUPORTE INFERIOR ---
+        JLabel lblSuporte = new JLabel("Suporte Corporativo: suporte@vitaclinica.com", SwingConstants.CENTER);
+        lblSuporte.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lblSuporte.setForeground(Color.GRAY);
+        lblSuporte.setBounds(0, 480, 460, 20);
+        p.add(lblSuporte);
 
-        // ====================================================================
-        // CONTROLE DE FLUXO / DIRECIONAMENTO INTELIGENTE
-        // ====================================================================
-        btnLogin.addActionListener(e -> {
-            String user = txtUsuario.getText().trim();
-            String password = new String(txtSenha.getPassword());
+        // --- LÓGICA DE AUTENTICAÇÃO INTEGRADA E CORRIGIDA ---
+        btnEntrar.addActionListener(e -> {
+            String usuarioDigitado = txtUser.getText().trim();
+            String senhaDigitada = new String(txtPass.getPassword()).trim();
+            boolean autenticado = false;
 
-            if (user.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, digite as credenciais.", "Campos Vazios", JOptionPane.WARNING_MESSAGE);
-            } 
-            // 1. Fluxo de Entrada do Médico
-            else if (user.equalsIgnoreCase("medico")) {
-                JOptionPane.showMessageDialog(this, "Acesso Médico Autorizado! Bem-vindo, Doutor.", "Autenticação", JOptionPane.INFORMATION_MESSAGE);
-                new TelaMedico().setVisible(true);
-                this.dispose(); // Fecha o login
-            } 
-            // 2. Fluxo de Entrada da Secretaria (Qualquer outro usuário digitado para testes)
-            else {
-                JOptionPane.showMessageDialog(this, "Acesso Administrativo Autorizado! Painel da Secretaria liberado.", "Autenticação", JOptionPane.INFORMATION_MESSAGE);
-                new TelaSecretaria().setVisible(true);
-                this.dispose(); // Fecha o login
+            for (GerenciadorAutenticacao.Usuario u : GerenciadorAutenticacao.bancoUsuarios) {
+                // Validação de segurança primária
+                if (u.login.equalsIgnoreCase(usuarioDigitado) && u.senha.equals(senhaDigitada)) {
+                    autenticado = true;
+                    this.dispose(); // Encerra a visualização do login
+                    
+                    // Normalização do texto para evitar conflito de encoding/acentos
+                    String pNormalizado = u.perfil.toLowerCase();
+                    
+                    if (pNormalizado.contains("admin") || pNormalizado.contains("adm")) {
+                        new TelaAdmin().setVisible(true);
+                    } else if (pNormalizado.contains("medico") || pNormalizado.contains("médico") || pNormalizado.contains("medic")) {
+                        new TelaMedico(u.login, u.especialidade).setVisible(true);
+                    } else if (pNormalizado.contains("secretaria") || pNormalizado.contains("secretária") || pNormalizado.contains("secre")) {
+                        new TelaSecretaria().setVisible(true);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Perfil verificado: " + u.perfil + ", mas a tela correspondente não foi achada.");
+                    }
+                    break;
+                }
+            }
+
+            if (!autenticado) {
+                JOptionPane.showMessageDialog(this, "Usuário ou chave de acesso incorretos.", "Acesso Recusado", JOptionPane.ERROR_MESSAGE);
             }
         });
     }
 
     public static void main(String[] args) {
+        // Look and Feel multiplataforma estável
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        SwingUtilities.invokeLater(() -> {
-            new TelaLogin().setVisible(true);
-        });
+        SwingUtilities.invokeLater(() -> new TelaLogin().setVisible(true));
     }
 }
