@@ -89,7 +89,7 @@ public class TelaSecretaria extends JFrame {
         btnNovoPac.addActionListener(e -> new TelaCadastrarPaciente_dac().setVisible(true));
         btnAgendar.addActionListener(e -> JOptionPane.showMessageDialog(this, "Abrindo calendário mestre para bloqueio de horários clínicos..."));
         btnCheckin.addActionListener(e -> JOptionPane.showMessageDialog(this, "Disparando atualização de status do paciente para a sala do médico!"));
-        btnMedicos.addActionListener(e -> JOptionPane.showMessageDialog(this, "Exibindo corpo de médicos ativos e especialidades integradas..."));
+        btnMedicos.addActionListener(e -> new TelaConsultarEscalaMedica().setVisible(true));
     }
 
     private JButton criarBotaoRecepcao(String texto) {
