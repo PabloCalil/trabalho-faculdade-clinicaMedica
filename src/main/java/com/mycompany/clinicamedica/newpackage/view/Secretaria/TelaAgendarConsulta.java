@@ -1,4 +1,4 @@
-package com.mycompany.clinicamedica.newpackage.view; // <-- Ajustado estritamente para o seu pacote real!
+package com.mycompany.clinicamedica.newpackage.view.Secretaria; // <-- Ajustado estritamente para o seu pacote real!
 
 import java.awt.*;
 import javax.swing.*;

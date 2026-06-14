@@ -1,5 +1,6 @@
-package com.mycompany.clinicamedica.newpackage.view; // <-- Alinhado estritamente com a sua árvore!
+package Telas_old; // <-- Alinhado estritamente com a sua árvore!
 
+import Telas_old.TelaCadastroUser;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

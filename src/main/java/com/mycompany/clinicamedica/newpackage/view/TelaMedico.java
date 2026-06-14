@@ -1,136 +1,157 @@
-package com.mycompany.clinicamedica.newpackage.view; // <-- Alinhado com a sua árvore de arquivos!
+package com.mycompany.clinicamedica.newpackage.view;
 
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.table.DefaultTableModel;
 
 public class TelaMedico extends JFrame {
+    private String nomeDoMedicoLogado;
+    private JTable tabela;
 
-    private JButton btnChamarPaciente;
-    private JButton btnConsultarProntuario;
-    private JButton btnEmitirPrescricao;
-    private JButton btnMinhaAgenda;
-    private JButton btnVoltar;
-
-    public TelaMedico() {
-        setTitle("🏥 Sistema Clínica Médica - Painel do Especialista");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(1100, 680);
+    public TelaMedico(String nomeMedico, String especialidade) {
+        this.nomeDoMedicoLogado = nomeMedico;
+        setTitle("VITA — Ambiente do Profissional Clínico");
+        setSize(1024, 640);
         setLocationRelativeTo(null);
-        setResizable(false);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        // PALETA DE CORES TERROSAS PADRONIZADA
-        Color corCremeClaro   = new Color(251, 251, 250); // #FBFBFA
-        Color corDestaqueGold = new Color(193, 158, 103); // #C19E67
-        Color corTomMedio     = new Color(110, 102, 95);  // #6E665F
-        Color corRotuloCinza  = new Color(180, 169, 158); // #B4A99E
-        Color corMarromEscuro = new Color(61, 28, 6);     // #3D1C06
+        // Paleta de Cores Premium (Marrom e Dourado VITA)
+        Color marromEscuro = new Color(61, 28, 6);
+        Color corGold      = new Color(193, 158, 103);
+        Color fundoClaro   = new Color(244, 241, 234);
 
-        // Painel Principal
-        JPanel painelFundo = new JPanel();
-        painelFundo.setBackground(corTomMedio);
-        painelFundo.setLayout(null);
-        setContentPane(painelFundo);
+        JPanel principal = new JPanel(new BorderLayout());
+        principal.setBackground(fundoClaro);
+        setContentPane(principal);
 
-        // Cabeçalho Clínico
-        JLabel lblTitulo = new JLabel("Painel de Atendimento Médico");
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 36));
-        lblTitulo.setForeground(corCremeClaro);
-        lblTitulo.setBounds(60, 40, 600, 50);
-        painelFundo.add(lblTitulo);
+        // --- HEADER MÉDICO ---
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(marromEscuro);
+        header.setBorder(new EmptyBorder(15, 40, 15, 40));
 
-        JLabel lblSubtitulo = new JLabel("Módulo do Médico — Prontuários, Consultas e Prescrições");
-        lblSubtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        lblSubtitulo.setForeground(corRotuloCinza);
-        lblSubtitulo.setBounds(60, 90, 500, 25);
-        painelFundo.add(lblSubtitulo);
-
-        // ====================================================================
-        // PAINEL CENTRAL DO MENU (Grade Modular)
-        // ====================================================================
-        JPanel painelMenu = new JPanel();
-        painelMenu.setBackground(corMarromEscuro);
-        painelMenu.setBorder(new LineBorder(corDestaqueGold, 2, true));
-        painelMenu.setLayout(new GridLayout(2, 2, 30, 30));
-        painelMenu.setBounds(60, 150, 960, 380);
+        JPanel txtHeader = new JPanel(new GridLayout(2, 1));
+        txtHeader.setBackground(marromEscuro);
         
-        painelMenu.setBorder(BorderFactory.createCompoundBorder(
-                painelMenu.getBorder(), 
-                new EmptyBorder(25, 25, 25, 25)
-        ));
-        painelFundo.add(painelMenu);
-
-        // Botões do Menu Médico em formato HTML nativo
-        btnChamarPaciente = configurarBotaoMenu("<html><center><font size='6'>🔊</font><br><br><b>Chamar Próximo</b><br><font size='3'>Painel de chamada da sala de espera</font></center></html>", corDestaqueGold, corMarromEscuro);
-        painelMenu.add(btnChamarPaciente);
-
-        btnConsultarProntuario = configurarBotaoMenu("<html><center><font size='6'>🗂️</font><br><br><b>Histórico & Prontuários</b><br><font size='3'>Buscar fichas clínicas e evolução médica</font></center></html>", corDestaqueGold, corMarromEscuro);
-        painelMenu.add(btnConsultarProntuario);
-
-        btnEmitirPrescricao = configurarBotaoMenu("<html><center><font size='6'>✍️</font><br><br><b>Prescrever / Atestados</b><br><font size='3'>Gerar receitas digitais e relatórios</font></center></html>", corDestaqueGold, corMarromEscuro);
-        painelMenu.add(btnEmitirPrescricao);
-
-        btnMinhaAgenda = configurarBotaoMenu("<html><center><font size='6'>📆</font><br><br><b>Minha Agenda</b><br><font size='3'>Visualizar pacientes agendados para hoje</font></center></html>", corDestaqueGold, corMarromEscuro);
-        painelMenu.add(btnMinhaAgenda);
-
-        // Botão de Logout / Voltar
-        btnVoltar = new JButton("← Desconectar");
-        btnVoltar.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnVoltar.setBackground(new Color(180, 70, 70));
-        btnVoltar.setForeground(corCremeClaro);
-        btnVoltar.setBounds(60, 565, 180, 40);
-        btnVoltar.setFocusPainted(false);
-        btnVoltar.setBorder(new LineBorder(Color.WHITE, 1, true));
-        btnVoltar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        painelFundo.add(btnVoltar);
-
-        // ====================================================================
-        // COMPORTAMENTOS / EVENTOS DOS BOTÕES
-        // ====================================================================
+        JLabel lblNome = new JLabel("Dr(a). " + nomeMedico.toUpperCase());
+        lblNome.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblNome.setForeground(Color.WHITE);
         
-        btnChamarPaciente.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Painel: Próximo paciente painelizado na TV da sala de espera.", "Painel de Chamadas", JOptionPane.INFORMATION_MESSAGE);
-        });
-
-        btnConsultarProntuario.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Buscando histórico clínico do paciente no banco de dados.", "Prontuário Eletrônico", JOptionPane.INFORMATION_MESSAGE);
-        });
-
-        btnEmitirPrescricao.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Carregando o gerador de Receituários, Atestados e Exames.", "Módulo de Prescrição", JOptionPane.INFORMATION_MESSAGE);
-        });
-
-        btnMinhaAgenda.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Exibindo as consultas confirmadas para o seu CRM hoje.", "Minha Agenda Diária", JOptionPane.INFORMATION_MESSAGE);
-        });
+        JLabel lblEsp = new JLabel("Especialidade: " + especialidade);
+        lblEsp.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblEsp.setForeground(corGold);
         
-        btnVoltar.addActionListener(e -> this.dispose());
+        txtHeader.add(lblNome);
+        txtHeader.add(lblEsp);
+        header.add(txtHeader, BorderLayout.WEST);
+
+        JButton btnSair = new JButton("Desconectar");
+        btnSair.setBackground(new Color(180, 70, 70));
+        btnSair.setForeground(Color.WHITE);
+        btnSair.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnSair.setFocusPainted(false);
+        btnSair.addActionListener(e -> {
+            this.dispose();
+            new TelaLogin().setVisible(true);
+        });
+        header.add(btnSair, BorderLayout.EAST);
+        principal.add(header, BorderLayout.NORTH);
+
+        // --- CORPO OPERACIONAL ---
+        JPanel corpo = new JPanel(new BorderLayout(20, 20));
+        corpo.setBackground(fundoClaro);
+        corpo.setBorder(new EmptyBorder(30, 40, 30, 40));
+
+        JLabel lblTabela = new JLabel("Fila de Atendimento Ocupacional / Consultas do Dia:");
+        lblTabela.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblTabela.setForeground(marromEscuro);
+        
+        JPanel pnlTabela = new JPanel(new BorderLayout(0, 10));
+        pnlTabela.setBackground(fundoClaro);
+        pnlTabela.add(lblTabela, BorderLayout.NORTH);
+
+        // Listagem da fila diária (Populada pela Secretaria)
+        String[] colunas = {"Horário", "Paciente", "Status Presença", "Convênio"};
+        DefaultTableModel modelo = new DefaultTableModel(colunas, 0);
+        modelo.addRow(new Object[]{"08:30", "Carlos Augusto Silva", "Aguardando", "Unimed"});
+        modelo.addRow(new Object[]{"09:15", "Mariana Costa Souza", "Em Triagem", "Particular"});
+        modelo.addRow(new Object[]{"10:00", "Roberto Alves Pereira", "Agendado", "Bradesco Saúde"});
+        
+        tabela = new JTable(modelo);
+        tabela.setRowHeight(30);
+        tabela.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        JScrollPane scroll = new JScrollPane(tabela);
+        scroll.setBorder(new LineBorder(corGold));
+        pnlTabela.add(scroll, BorderLayout.CENTER);
+        
+        corpo.add(pnlTabela, BorderLayout.CENTER);
+
+        // Painel Lateral de Cards de Ação (Visual Limpo e Sem Caracteres Quebrados)
+        JPanel acoes = new JPanel(new GridLayout(3, 1, 0, 15));
+        acoes.setBackground(fundoClaro);
+        acoes.setPreferredSize(new Dimension(250, 0));
+
+        JButton btnProntuario = criarBotaoClinico("Chamar Prontuário");
+        JButton btnHistorico   = criarBotaoClinico("Histórico Clínico");
+        JButton btnReceita    = criarBotaoClinico("Emitir Receita / Atestado");
+
+        acoes.add(btnProntuario); 
+        acoes.add(btnHistorico); 
+        acoes.add(btnReceita);
+        corpo.add(acoes, BorderLayout.EAST);
+
+        principal.add(corpo, BorderLayout.CENTER);
+
+        // --- CONFIGURAÇÃO DOS EVENTOS CLÍNICOS ---
+        
+        // LÓGICA DINÂMICA: Mapeia a tabela e envia os nomes cadastrados para a caixa de escolha
+        btnProntuario.addActionListener(e -> {
+            int totalPacientes = tabela.getRowCount();
+            String[] listaPacientes = new String[totalPacientes];
+            
+            // Lê dinamicamente a coluna 1 ("Paciente") de cada linha da tabela
+            for (int i = 0; i < totalPacientes; i++) {
+                listaPacientes[i] = tabela.getValueAt(i, 1).toString();
+            }
+            
+            // Tratamento de segurança caso a fila esteja vazia
+            if (totalPacientes == 0) {
+                listaPacientes = new String[]{"Nenhum paciente agendado"};
+            }
+
+            // Abre a janela de confirmação por Caixa de Escolha
+            new TelaSelecionarPaciente(nomeDoMedicoLogado, listaPacientes).setVisible(true);
+        });
+
+        btnHistorico.addActionListener(e -> {
+            String paciente = obterPacienteSelecionado();
+            new TelaHistoricoClinico(paciente).setVisible(true);
+        });
+
+        btnReceita.addActionListener(e -> {
+            String paciente = obterPacienteSelecionado();
+            new TelaEmitirReceita(paciente, nomeDoMedicoLogado).setVisible(true);
+        });
     }
 
-    /**
-     * Auxiliar de estilização dos botões para manter a integridade visual estável no Maven.
-     */
-    private JButton configurarBotaoMenu(String textoHTML, Color fundo, Color texto) {
-        JButton botao = new JButton(textoHTML);
-        botao.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        botao.setBackground(fundo);
-        botao.setForeground(texto);
-        botao.setFocusPainted(false);
-        botao.setBorder(new LineBorder(fundo.darker(), 1, true));
-        botao.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return botao;
-    }
-
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
+    // Auxiliar para pegar o paciente selecionado com clique ou retornar o primeiro da fila caso nenhum esteja selecionado
+    private String obterPacienteSelecionado() {
+        int linha = tabela.getSelectedRow();
+        if (linha == -1) {
+            return tabela.getValueAt(0, 1).toString();
         }
+        return tabela.getValueAt(linha, 1).toString();
+    }
 
-        SwingUtilities.invokeLater(() -> {
-            new TelaMedico().setVisible(true);
-        });
+    private JButton criarBotaoClinico(String texto) {
+        JButton b = new JButton(texto);
+        b.setBackground(Color.WHITE);
+        b.setForeground(new Color(44, 37, 32));
+        b.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        b.setBorder(new LineBorder(new Color(193, 158, 103), 1, true));
+        b.setFocusPainted(false);
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return b;
     }
 }

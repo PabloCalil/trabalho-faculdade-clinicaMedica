@@ -1,7 +1,7 @@
-package com.mycompany.clinicamedica.newpackage.view;
+package Telas_old;
 
 import Services.BDSConnection;
-import Services.Usuario_E_MedicoDAO;
+import Services.UsuarioDAO;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -242,13 +242,13 @@ public class TelaCadastroUser extends JFrame {
                         "Erro", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                Usuario_E_MedicoDAO dao = new Usuario_E_MedicoDAO();
+                UsuarioDAO dao = new UsuarioDAO();
                 idEspecialidade = dao.buscarIdEspecialidade(
                     cbEspecialidade.getSelectedItem().toString()
                 );
             }
 
-            Usuario_E_MedicoDAO dao = new Usuario_E_MedicoDAO();
+            UsuarioDAO dao = new UsuarioDAO();
             boolean sucesso = dao.inserir(nome, login, senha, perfil,
                                           cpf, telefone, endereco,
                                           crm, idEspecialidade);

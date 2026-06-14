@@ -1,4 +1,4 @@
-package com.mycompany.clinicamedica.newpackage.view;
+package Telas_old;
 
 import java.awt.*;
 import javax.swing.*;

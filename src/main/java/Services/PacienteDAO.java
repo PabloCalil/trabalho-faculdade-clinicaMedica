@@ -1,11 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Services;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -15,7 +12,6 @@ public class PacienteDAO {
 
     public void inserir(Paciente paciente) {
 
-        // Converte de dd/MM/yyyy para yyyy-MM-dd (formato do MySQL)
         String dataFormatada;
         try {
             DateTimeFormatter entrada = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -27,8 +23,8 @@ public class PacienteDAO {
             return;
         }
 
-        String sql = "INSERT INTO paciente (nome, cpf, dataNascimento, telefone) "
-                   + "VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO paciente (nome, cpf, dataNascimento, telefone, idConvenio, numeroCarteirinha) "
+                   + "VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = BDSConnection.getConexao();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -38,11 +34,32 @@ public class PacienteDAO {
             stmt.setString(3, dataFormatada);
             stmt.setString(4, paciente.getTelefone());
 
+            if (paciente.getIdConvenio() > 0) {
+                stmt.setInt(5, paciente.getIdConvenio());
+            } else {
+                stmt.setNull(5, java.sql.Types.INTEGER);
+            }
+
+            stmt.setString(6, paciente.getNumeroCarteirinha());
             stmt.executeUpdate();
             System.out.println("Paciente inserido com sucesso!");
 
         } catch (SQLException e) {
             System.err.println("Erro ao inserir paciente: " + e.getMessage());
         }
+    }
+
+    public int buscarIdConvenio(String nomeConvenio) {
+        String sql = "SELECT idConvenio FROM convenio WHERE nome = ?";
+        try (Connection conn = BDSConnection.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nomeConvenio);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) return rs.getInt("idConvenio");
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar convênio: " + e.getMessage());
+        }
+        return -1;
     }
 }

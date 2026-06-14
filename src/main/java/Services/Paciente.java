@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Services;
 
-/**
- *
- * @author Diego Alves
- */
 public class Paciente {
 
     private String nome;
@@ -16,22 +8,11 @@ public class Paciente {
     private String dataNascimento;
     private String telefone;
     private String sexo;
+    private int idConvenio;
+    private String numeroCarteirinha;
 
-    // Construtor vazio
     public Paciente() {}
 
-    // Construtor completo
-    public Paciente(String nome, String cpf, String endereco, 
-                    String dataNascimento, String telefone, String sexo) {
-        this.nome = nome;
-        this.cpf = cpf;
-        this.endereco = endereco;
-        this.dataNascimento = dataNascimento;
-        this.telefone = telefone;
-        this.sexo = sexo;
-    }
-
-    // GETTERS E SETTERS
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
 
@@ -50,4 +31,9 @@ public class Paciente {
     public String getSexo() { return sexo; }
     public void setSexo(String sexo) { this.sexo = sexo; }
 
-    }
+    public int getIdConvenio() { return idConvenio; }
+    public void setIdConvenio(int idConvenio) { this.idConvenio = idConvenio; }
+
+    public String getNumeroCarteirinha() { return numeroCarteirinha; }
+    public void setNumeroCarteirinha(String numeroCarteirinha) { this.numeroCarteirinha = numeroCarteirinha; }
+}
