@@ -91,7 +91,7 @@ public class TelaAdmin extends JFrame {
         
         // Procure e altere essa ação dentro da sua TelaAdministrador.java:
 btnGerenciarUsuarios.addActionListener(e -> {
-    new TelaGerenciarUsuarios().setVisible(true);
+    new TelaCadastroUser().setVisible(true);
 });
 
         btnRelatoriosFinanceiros.addActionListener(e -> {
