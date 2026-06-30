@@ -11,6 +11,12 @@ import java.sql.SQLException;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
 public class TelaCadastrarPaciente_dac extends JFrame {
 
@@ -71,7 +77,13 @@ public class TelaCadastrarPaciente_dac extends JFrame {
 
         txtCPF = criarCampoTexto();
         txtCPF.setBounds(40, 123, 330, 35);
+        aplicarFiltroDigitos(txtCPF, 11);
         painelForm.add(txtCPF);
+
+        JLabel lblContCPF = criarContador("0/11 dígitos");
+        lblContCPF.setBounds(40, 160, 200, 16);
+        painelForm.add(lblContCPF);
+        vincularContador(txtCPF, lblContCPF, 11);
 
         JLabel lblTelefone = new JLabel("Telefone / WhatsApp:");
         lblTelefone.setFont(fonteLabel);
@@ -81,7 +93,13 @@ public class TelaCadastrarPaciente_dac extends JFrame {
 
         txtTelefone = criarCampoTexto();
         txtTelefone.setBounds(410, 123, 330, 35);
+        aplicarFiltroDigitos(txtTelefone, 11);
         painelForm.add(txtTelefone);
+
+        JLabel lblContTel = criarContador("0/11 dígitos");
+        lblContTel.setBounds(410, 160, 220, 16);
+        painelForm.add(lblContTel);
+        vincularContador(txtTelefone, lblContTel, 11);
 
         // --- Data Nascimento | Sexo ---
         JLabel lblNasc = new JLabel("Data de Nascimento:");
@@ -248,6 +266,24 @@ public class TelaCadastrarPaciente_dac extends JFrame {
             return;
         }
 
+        String cpf = txtCPF.getText().trim();
+        if (cpf.length() != 11) {
+            JOptionPane.showMessageDialog(this,
+                "CPF deve ter exatamente 11 dígitos. Você inseriu " + cpf.length() + ".",
+                "CPF inválido", JOptionPane.ERROR_MESSAGE);
+            txtCPF.requestFocus();
+            return;
+        }
+
+        String telefone = txtTelefone.getText().trim();
+        if (telefone.length() < 10 || telefone.length() > 11) {
+            JOptionPane.showMessageDialog(this,
+                "Telefone deve ter 10 ou 11 dígitos (com DDD). Você inseriu " + telefone.length() + ".",
+                "Telefone inválido", JOptionPane.ERROR_MESSAGE);
+            txtTelefone.requestFocus();
+            return;
+        }
+
         if (cbSexo.getSelectedIndex() == 0) {
             JOptionPane.showMessageDialog(this,
                 "Por favor, selecione o sexo do paciente.",
@@ -279,6 +315,51 @@ public class TelaCadastrarPaciente_dac extends JFrame {
             "Sucesso", JOptionPane.INFORMATION_MESSAGE);
 
         this.dispose();
+    }
+
+    private void aplicarFiltroDigitos(JTextField campo, int maxDigitos) {
+        ((AbstractDocument) campo.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String text, AttributeSet attr)
+                    throws BadLocationException {
+                if (text == null) return;
+                String digitos = text.replaceAll("\\D", "");
+                int restante = maxDigitos - fb.getDocument().getLength();
+                if (restante > 0)
+                    super.insertString(fb, offset, digitos.substring(0, Math.min(digitos.length(), restante)), attr);
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
+                    throws BadLocationException {
+                if (text == null) text = "";
+                String digitos = text.replaceAll("\\D", "");
+                int restante = maxDigitos - (fb.getDocument().getLength() - length);
+                if (restante > 0)
+                    super.replace(fb, offset, length, digitos.substring(0, Math.min(digitos.length(), restante)), attrs);
+            }
+        });
+    }
+
+    private JLabel criarContador(String textoInicial) {
+        JLabel lbl = new JLabel(textoInicial);
+        lbl.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lbl.setForeground(corRotuloCinza);
+        return lbl;
+    }
+
+    private void vincularContador(JTextField campo, JLabel contador, int max) {
+        campo.getDocument().addDocumentListener(new DocumentListener() {
+            private void atualizar() {
+                int len = campo.getText().length();
+                contador.setText(len + "/" + max + " dígitos");
+                contador.setForeground(len == max ? new Color(80, 160, 80) :
+                                       len  > 0   ? corRotuloCinza : corRotuloCinza);
+            }
+            @Override public void insertUpdate(DocumentEvent e)  { atualizar(); }
+            @Override public void removeUpdate(DocumentEvent e)  { atualizar(); }
+            @Override public void changedUpdate(DocumentEvent e) { atualizar(); }
+        });
     }
 
     private JTextField criarCampoTexto() {
