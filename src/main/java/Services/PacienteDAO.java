@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PacienteDAO {
 
@@ -47,6 +49,24 @@ public class PacienteDAO {
         } catch (SQLException e) {
             System.err.println("Erro ao inserir paciente: " + e.getMessage());
         }
+    }
+
+    public List<Paciente> listarTodos() {
+        List<Paciente> lista = new ArrayList<>();
+        String sql = "SELECT idPaciente, nome FROM paciente ORDER BY nome";
+        try (Connection conn = BDSConnection.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Paciente p = new Paciente();
+                p.setIdPaciente(rs.getInt("idPaciente"));
+                p.setNome(rs.getString("nome"));
+                lista.add(p);
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar pacientes: " + e.getMessage());
+        }
+        return lista;
     }
 
     public int buscarIdConvenio(String nomeConvenio) {

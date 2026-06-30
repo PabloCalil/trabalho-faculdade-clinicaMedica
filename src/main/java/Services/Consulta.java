@@ -7,6 +7,7 @@ public class Consulta {
     private String status;
     private String nomePaciente;
     private String nomeConvenio;
+    private String nomeMedico;
     private int idPaciente;
     
 
@@ -24,6 +25,9 @@ public class Consulta {
 
     public String getNomeConvenio() { return nomeConvenio; }
     public void setNomeConvenio(String nomeConvenio) { this.nomeConvenio = nomeConvenio; }
+
+    public String getNomeMedico() { return nomeMedico; }
+    public void setNomeMedico(String nomeMedico) { this.nomeMedico = nomeMedico; }
 
 public int getIdPaciente() {
     return idPaciente;
