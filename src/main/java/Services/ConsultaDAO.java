@@ -95,6 +95,25 @@ public class ConsultaDAO {
         return lista;
     }
 
+    public boolean atualizar(int idConsulta, int idPaciente, int idMedico, Integer idConvenio, String dataHora) {
+        String sql = "UPDATE consulta SET idPaciente=?, idUsuario=?, idConvenio=?, dataHora=? WHERE idConsulta=?";
+        try (Connection conn = BDSConnection.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idPaciente);
+            stmt.setInt(2, idMedico);
+            if (idConvenio != null && idConvenio > 0)
+                stmt.setInt(3, idConvenio);
+            else
+                stmt.setNull(3, java.sql.Types.INTEGER);
+            stmt.setString(4, dataHora);
+            stmt.setInt(5, idConsulta);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Erro ao atualizar consulta: " + e.getMessage());
+            return false;
+        }
+    }
+
     public boolean atualizarStatus(int idConsulta, String novoStatus) {
         String sql = "UPDATE consulta SET status = ? WHERE idConsulta = ?";
         try (Connection conn = BDSConnection.getConexao();

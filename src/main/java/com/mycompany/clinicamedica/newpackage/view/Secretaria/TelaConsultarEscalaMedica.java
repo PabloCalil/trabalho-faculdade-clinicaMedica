@@ -17,120 +17,165 @@ import javax.swing.table.*;
 
 public class TelaConsultarEscalaMedica extends JFrame {
 
+    // ── Filtros ───────────────────────────────────────────────────────────────
     private JComboBox<String> cbMedico;
-    private JSpinner spinnerData;
-    private JTable tabela;
-    private DefaultTableModel modelo;
+    private JSpinner           spinnerData;
+
+    // ── Tabela ────────────────────────────────────────────────────────────────
+    private JTable             tabela;
+    private DefaultTableModel  modelo;
+
+    // ── Botões de ação ────────────────────────────────────────────────────────
+    private JButton btnGerar, btnAgendar, btnCheckin, btnEditar, btnCancelar, btnAtualizar;
+
+    // ── Rodapé ────────────────────────────────────────────────────────────────
     private JLabel lblResumo;
-    private JButton btnGerar, btnAgendar, btnCheckin;
 
-    private final List<Integer> idsMedicos = new ArrayList<>();
+    // ── Estado ────────────────────────────────────────────────────────────────
+    private final List<Integer>      idsMedicos             = new ArrayList<>();
     private final Map<String, Integer> idConsultaPorHorario = new LinkedHashMap<>();
-    private final Map<String, String> pacientePorHorario   = new LinkedHashMap<>();
+    private final Map<String, String>  pacientePorHorario   = new LinkedHashMap<>();
 
+    // ── Paleta ────────────────────────────────────────────────────────────────
     private static final Color MARROM  = new Color(61, 28, 6);
     private static final Color GOLD    = new Color(193, 158, 103);
     private static final Color MEDIO   = new Color(110, 102, 95);
     private static final Color CREME   = new Color(251, 251, 250);
     private static final Color ROTULO  = new Color(180, 169, 158);
-    private static final Color LIVRE   = new Color(210, 235, 210);
-    private static final Color OCUPADO = new Color(245, 220, 215);
-    private static final Color PRESENTE = new Color(200, 220, 245);
+    private static final Color C_LIVRE   = new Color(210, 235, 210);
+    private static final Color C_OCUPADO = new Color(245, 220, 215);
+    private static final Color C_PRESENTE = new Color(200, 220, 245);
 
     private static final String[] HORARIOS = {
         "08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30",
         "13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30"
     };
 
+    // ═════════════════════════════════════════════════════════════════════════
     public TelaConsultarEscalaMedica() {
         setTitle("VITA — Agenda Médica");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(1060, 730);
+        setMinimumSize(new Dimension(860, 540));
+        setSize(1080, 700);
         setLocationRelativeTo(null);
-        setResizable(false);
+        setResizable(true);
 
-        JPanel fundo = new JPanel(null);
-        fundo.setBackground(MEDIO);
-        setContentPane(fundo);
+        // Raiz usa BorderLayout — a tabela ficará em CENTER e vai esticar
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(MEDIO);
+        setContentPane(root);
 
-        // ── HEADER ────────────────────────────────────────────────────────────
-        JPanel header = new JPanel(null);
-        header.setBackground(MARROM);
-        header.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, GOLD));
-        header.setBounds(0, 0, 1060, 70);
-        fundo.add(header);
+        root.add(criarHeader(),   BorderLayout.NORTH);
+        root.add(criarConteudo(), BorderLayout.CENTER);
 
-        JLabel lblTitulo = new JLabel("Agenda Médica — Agendamento e Check-in");
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        lblTitulo.setForeground(Color.WHITE);
-        lblTitulo.setBounds(30, 18, 650, 32);
-        header.add(lblTitulo);
+        carregarMedicos();
+        configurarEventos();
+    }
+
+    // ── HEADER (altura fixa, largura flexível) ────────────────────────────────
+    private JPanel criarHeader() {
+        JPanel h = new JPanel(new BorderLayout());
+        h.setBackground(MARROM);
+        h.setBorder(new CompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 2, 0, GOLD),
+            new EmptyBorder(14, 28, 14, 28)));
+
+        JLabel lbl = new JLabel("Agenda Médica — Agendamento e Atendimento");
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lbl.setForeground(Color.WHITE);
+        h.add(lbl, BorderLayout.WEST);
 
         JButton btnFechar = new JButton("Fechar");
-        btnFechar.setBounds(940, 20, 90, 30);
         btnFechar.setBackground(new Color(180, 70, 70));
         btnFechar.setForeground(Color.WHITE);
         btnFechar.setFocusPainted(false);
         btnFechar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnFechar.addActionListener(e -> dispose());
-        header.add(btnFechar);
+        h.add(btnFechar, BorderLayout.EAST);
 
-        // ── FILTROS ───────────────────────────────────────────────────────────
-        JPanel pFiltros = new JPanel(null);
-        pFiltros.setBackground(new Color(45, 20, 4));
-        pFiltros.setBorder(new LineBorder(GOLD, 1, true));
-        pFiltros.setBounds(20, 85, 1020, 75);
-        fundo.add(pFiltros);
+        return h;
+    }
 
-        JLabel lMedico = rotulo("Médico / Especialista:");
-        lMedico.setBounds(20, 8, 200, 18);
-        pFiltros.add(lMedico);
+    // ── CONTEÚDO PRINCIPAL (BorderLayout) ─────────────────────────────────────
+    private JPanel criarConteudo() {
+        JPanel main = new JPanel(new BorderLayout(0, 10));
+        main.setBackground(MEDIO);
+        main.setBorder(new EmptyBorder(14, 18, 14, 18));
 
+        main.add(criarFiltros(),   BorderLayout.NORTH);
+        main.add(criarTabela(),    BorderLayout.CENTER);  // ← estica com a janela
+        main.add(criarRodape(),    BorderLayout.SOUTH);
+
+        return main;
+    }
+
+    // ── BARRA DE FILTROS ──────────────────────────────────────────────────────
+    private JPanel criarFiltros() {
+        JPanel p = new JPanel(new GridBagLayout());
+        p.setBackground(new Color(45, 20, 4));
+        p.setBorder(new CompoundBorder(
+            new LineBorder(GOLD, 1, true),
+            new EmptyBorder(10, 16, 10, 16)));
+
+        GridBagConstraints g = new GridBagConstraints();
+        g.insets = new Insets(2, 6, 2, 6);
+        g.fill   = GridBagConstraints.HORIZONTAL;
+        g.anchor = GridBagConstraints.WEST;
+
+        // Linha de rótulos
+        g.gridy = 0; g.gridx = 0; g.weightx = 0;
+        p.add(rotulo("Médico / Especialista:"), g);
+        g.gridx = 1; g.weightx = 0;
+        p.add(rotulo("Data:"), g);
+
+        // Linha de campos
+        g.gridy = 1; g.gridx = 0; g.weightx = 1.0;
         cbMedico = new JComboBox<>();
-        cbMedico.setBackground(MEDIO);
-        cbMedico.setForeground(CREME);
-        cbMedico.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cbMedico.setBorder(new LineBorder(GOLD, 1));
-        cbMedico.setBounds(20, 30, 380, 32);
-        pFiltros.add(cbMedico);
+        estilizarCombo(cbMedico);
+        p.add(cbMedico, g);
 
-        JLabel lData = rotulo("Data:");
-        lData.setBounds(430, 8, 80, 18);
-        pFiltros.add(lData);
-
-        SpinnerDateModel dateModel = new SpinnerDateModel(new java.util.Date(), null, null, Calendar.DAY_OF_MONTH);
-        spinnerData = new JSpinner(dateModel);
-        JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(spinnerData, "dd/MM/yyyy");
-        spinnerData.setEditor(dateEditor);
-        dateEditor.getTextField().setBackground(MEDIO);
-        dateEditor.getTextField().setForeground(CREME);
-        dateEditor.getTextField().setCaretColor(CREME);
-        dateEditor.getTextField().setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        g.gridx = 1; g.weightx = 0;
+        SpinnerDateModel dm = new SpinnerDateModel(new java.util.Date(), null, null, Calendar.DAY_OF_MONTH);
+        spinnerData = new JSpinner(dm);
+        JSpinner.DateEditor de = new JSpinner.DateEditor(spinnerData, "dd/MM/yyyy");
+        spinnerData.setEditor(de);
+        de.getTextField().setBackground(MEDIO);
+        de.getTextField().setForeground(CREME);
+        de.getTextField().setCaretColor(CREME);
+        de.getTextField().setFont(new Font("Segoe UI", Font.PLAIN, 13));
         spinnerData.setBackground(MEDIO);
         spinnerData.setBorder(new LineBorder(GOLD, 1));
-        spinnerData.setBounds(430, 30, 160, 32);
-        pFiltros.add(spinnerData);
+        spinnerData.setPreferredSize(new Dimension(160, 32));
+        p.add(spinnerData, g);
 
+        g.gridx = 2; g.weightx = 0; g.gridheight = 2; g.anchor = GridBagConstraints.SOUTH;
         btnGerar = botaoPrimario("Ver Agenda");
-        btnGerar.setBounds(870, 22, 130, 36);
-        pFiltros.add(btnGerar);
+        btnGerar.setPreferredSize(new Dimension(130, 32));
+        p.add(btnGerar, g);
 
-        // ── LEGENDA ───────────────────────────────────────────────────────────
-        JPanel pLegenda = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
-        pLegenda.setBackground(MEDIO);
-        pLegenda.setBounds(20, 168, 500, 28);
-        fundo.add(pLegenda);
-        pLegenda.add(chip(LIVRE,    "Livre"));
-        pLegenda.add(chip(OCUPADO,  "Ocupado"));
-        pLegenda.add(chip(PRESENTE, "Presente"));
+        return p;
+    }
 
-        // ── TABELA ────────────────────────────────────────────────────────────
+    // ── ÁREA DA TABELA (cresce com a janela) ──────────────────────────────────
+    private JPanel criarTabela() {
+        JPanel p = new JPanel(new BorderLayout(0, 6));
+        p.setBackground(MEDIO);
+
+        // Legenda
+        JPanel legenda = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
+        legenda.setBackground(MEDIO);
+        legenda.add(chip(C_LIVRE,    "Livre"));
+        legenda.add(chip(C_OCUPADO,  "Ocupado"));
+        legenda.add(chip(C_PRESENTE, "Presente"));
+        p.add(legenda, BorderLayout.NORTH);
+
+        // Tabela
         String[] cols = {"Horário", "Situação", "Paciente", "Convênio", "Status"};
         modelo = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         tabela = new JTable(modelo);
-        tabela.setRowHeight(30);
+        tabela.setRowHeight(28);
         tabela.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tabela.setGridColor(new Color(200, 195, 185));
         tabela.setSelectionBackground(GOLD);
@@ -141,7 +186,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
         tabela.getTableHeader().setReorderingAllowed(false);
         tabela.getColumnModel().getColumn(0).setMaxWidth(80);
         tabela.getColumnModel().getColumn(1).setMaxWidth(90);
-        tabela.getColumnModel().getColumn(4).setMaxWidth(110);
+        tabela.getColumnModel().getColumn(4).setMaxWidth(120);
 
         DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
             @Override
@@ -151,9 +196,9 @@ public class TelaConsultarEscalaMedica extends JFrame {
                 if (!sel) {
                     String sit = String.valueOf(t.getValueAt(row, 1));
                     String sts = String.valueOf(t.getValueAt(row, 4));
-                    if ("Livre".equals(sit))          c.setBackground(LIVRE);
-                    else if ("Presente".equals(sts))  c.setBackground(PRESENTE);
-                    else                               c.setBackground(OCUPADO);
+                    if ("Livre".equals(sit))          c.setBackground(C_LIVRE);
+                    else if ("Presente".equals(sts))  c.setBackground(C_PRESENTE);
+                    else                              c.setBackground(C_OCUPADO);
                     c.setForeground(MARROM);
                 }
                 return c;
@@ -163,46 +208,65 @@ public class TelaConsultarEscalaMedica extends JFrame {
             tabela.getColumnModel().getColumn(i).setCellRenderer(renderer);
 
         JScrollPane scroll = new JScrollPane(tabela);
-        scroll.setBounds(20, 200, 1020, 400);
         scroll.setBorder(new LineBorder(GOLD, 1));
-        fundo.add(scroll);
+        p.add(scroll, BorderLayout.CENTER);
 
-        // ── RODAPÉ ────────────────────────────────────────────────────────────
+        return p;
+    }
+
+    // ── RODAPÉ COM BOTÕES ─────────────────────────────────────────────────────
+    private JPanel criarRodape() {
+        JPanel p = new JPanel(new BorderLayout());
+        p.setBackground(MEDIO);
+        p.setBorder(new EmptyBorder(6, 0, 0, 0));
+
         lblResumo = new JLabel("Selecione o médico, a data e clique em \"Ver Agenda\".");
-        lblResumo.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblResumo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         lblResumo.setForeground(CREME);
-        lblResumo.setBounds(20, 610, 560, 22);
-        fundo.add(lblResumo);
+        p.add(lblResumo, BorderLayout.WEST);
 
-        JButton btnAtualizar = botaoSecundario("Atualizar");
-        btnAtualizar.setBounds(590, 603, 110, 36);
-        fundo.add(btnAtualizar);
+        JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        botoes.setBackground(MEDIO);
 
-        btnCheckin = new JButton("✔  Confirmar Presença");
+        btnAtualizar = botaoSecundario("↻ Atualizar");
+        btnCheckin  = new JButton("✔ Confirmar Presença");
         btnCheckin.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnCheckin.setBackground(new Color(55, 130, 55));
         btnCheckin.setForeground(Color.WHITE);
-        btnCheckin.setBounds(715, 603, 190, 36);
         btnCheckin.setFocusPainted(false);
         btnCheckin.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        btnEditar   = botaoSecundario("✎ Editar");
+        btnCancelar = new JButton("✖ Cancelar Consulta");
+        btnCancelar.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnCancelar.setBackground(new Color(170, 50, 50));
+        btnCancelar.setForeground(Color.WHITE);
+        btnCancelar.setFocusPainted(false);
+        btnCancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        btnAgendar  = botaoPrimario("+ Agendar");
+
+        // Estado inicial: todos desabilitados (exceto Atualizar)
         btnCheckin.setEnabled(false);
-        fundo.add(btnCheckin);
-
-        btnAgendar = botaoPrimario("Agendar Consulta");
-        btnAgendar.setBounds(920, 603, 160, 36);
+        btnEditar.setEnabled(false);
+        btnCancelar.setEnabled(false);
         btnAgendar.setEnabled(false);
-        fundo.add(btnAgendar);
 
-        carregarMedicos();
-        configurarEventos(btnAtualizar);
+        botoes.add(btnAtualizar);
+        botoes.add(btnCancelar);
+        botoes.add(btnEditar);
+        botoes.add(btnCheckin);
+        botoes.add(btnAgendar);
+        p.add(botoes, BorderLayout.EAST);
+
+        return p;
     }
 
-    // ── CARGA INICIAL ──────────────────────────────────────────────────────────
-
+    // ── CARGA DE MÉDICOS ──────────────────────────────────────────────────────
     private void carregarMedicos() {
         cbMedico.addItem("Selecione o médico...");
         idsMedicos.add(0);
-        String sql = "SELECT u.idUsuario, u.nome, e.nome AS especialidade "
+        String sql = "SELECT u.idUsuario, u.nome, e.nome AS esp "
                    + "FROM usuario u JOIN medico m ON m.idUsuario = u.idUsuario "
                    + "LEFT JOIN especialidade e ON e.idEspecialidade = m.idEspecialidade "
                    + "WHERE u.ativo = 1 ORDER BY u.nome";
@@ -210,7 +274,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
              PreparedStatement st = conn.prepareStatement(sql);
              ResultSet rs = st.executeQuery()) {
             while (rs.next()) {
-                String esp = rs.getString("especialidade");
+                String esp = rs.getString("esp");
                 cbMedico.addItem(rs.getString("nome") + (esp != null ? " (" + esp + ")" : ""));
                 idsMedicos.add(rs.getInt("idUsuario"));
             }
@@ -220,20 +284,14 @@ public class TelaConsultarEscalaMedica extends JFrame {
         }
     }
 
-    // ── EVENTOS ────────────────────────────────────────────────────────────────
-
-    private void configurarEventos(JButton btnAtualizar) {
+    // ── EVENTOS ───────────────────────────────────────────────────────────────
+    private void configurarEventos() {
         btnGerar.addActionListener(e -> gerarEscala());
         btnAtualizar.addActionListener(e -> gerarEscala());
 
         tabela.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) return;
-            int row = tabela.getSelectedRow();
-            if (row < 0) { btnAgendar.setEnabled(false); btnCheckin.setEnabled(false); return; }
-            String sit = (String) modelo.getValueAt(row, 1);
-            String sts = (String) modelo.getValueAt(row, 4);
-            btnAgendar.setEnabled("Livre".equals(sit));
-            btnCheckin.setEnabled("Ocupado".equals(sit) && !"Presente".equals(sts));
+            atualizarBotoes();
         });
 
         btnAgendar.addActionListener(e -> {
@@ -243,59 +301,55 @@ public class TelaConsultarEscalaMedica extends JFrame {
             int idMedico = idsMedicos.get(cbMedico.getSelectedIndex());
             String dataBr = new SimpleDateFormat("dd/MM/yyyy")
                 .format(((SpinnerDateModel) spinnerData.getModel()).getDate());
-            abrirDialogAgendar(idMedico, (String) cbMedico.getSelectedItem(), dataBr, horario);
+            abrirDialogAgendar(-1, idMedico, (String) cbMedico.getSelectedItem(), dataBr, horario);
         });
 
-        btnCheckin.addActionListener(e -> {
-            int row = tabela.getSelectedRow();
-            if (row < 0) return;
-            String horario  = (String) modelo.getValueAt(row, 0);
-            String paciente = (String) modelo.getValueAt(row, 2);
-            Integer idConsulta = idConsultaPorHorario.get(horario);
-            if (idConsulta == null) return;
-
-            int ok = JOptionPane.showConfirmDialog(this,
-                "Confirmar chegada de: " + paciente + "?",
-                "Check-in", JOptionPane.YES_NO_OPTION);
-            if (ok != JOptionPane.YES_OPTION) return;
-
-            if (new ConsultaDAO().atualizarStatus(idConsulta, "Presente")) {
-                JOptionPane.showMessageDialog(this,
-                    paciente + " registrado como Presente.", "Check-in realizado",
-                    JOptionPane.INFORMATION_MESSAGE);
-                gerarEscala();
-            } else {
-                JOptionPane.showMessageDialog(this, "Erro ao atualizar. Verifique a conexão.",
-                    "Erro", JOptionPane.ERROR_MESSAGE);
-            }
-        });
+        btnCheckin.addActionListener(e -> confirmarPresenca());
+        btnEditar.addActionListener(e -> editarConsulta());
+        btnCancelar.addActionListener(e -> cancelarConsulta());
     }
 
-    // ── GERAR GRADE ────────────────────────────────────────────────────────────
+    private void atualizarBotoes() {
+        int row = tabela.getSelectedRow();
+        if (row < 0) {
+            btnAgendar.setEnabled(false);
+            btnCheckin.setEnabled(false);
+            btnEditar.setEnabled(false);
+            btnCancelar.setEnabled(false);
+            return;
+        }
+        String sit = (String) modelo.getValueAt(row, 1);
+        String sts = (String) modelo.getValueAt(row, 4);
+        boolean livre     = "Livre".equals(sit);
+        boolean concluido = "Concluído".equals(sts);
 
+        btnAgendar.setEnabled(livre);
+        btnCheckin.setEnabled(!livre && ("Agendado".equals(sts) || "Confirmado".equals(sts)));
+        btnEditar.setEnabled(!livre && !concluido);
+        btnCancelar.setEnabled(!livre && !concluido);
+    }
+
+    // ── GERAR GRADE ───────────────────────────────────────────────────────────
     private void gerarEscala() {
         if (cbMedico.getSelectedIndex() == 0) {
             JOptionPane.showMessageDialog(this, "Selecione um médico.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
         int idMedico = idsMedicos.get(cbMedico.getSelectedIndex());
-        String dataSQL = new SimpleDateFormat("yyyy-MM-dd")
-            .format(((SpinnerDateModel) spinnerData.getModel()).getDate());
-        String dataBr  = new SimpleDateFormat("dd/MM/yyyy")
-            .format(((SpinnerDateModel) spinnerData.getModel()).getDate());
+        java.util.Date dataSelecionada = ((SpinnerDateModel) spinnerData.getModel()).getDate();
+        String dataSQL = new SimpleDateFormat("yyyy-MM-dd").format(dataSelecionada);
+        String dataBr  = new SimpleDateFormat("dd/MM/yyyy").format(dataSelecionada);
 
         idConsultaPorHorario.clear();
         pacientePorHorario.clear();
 
-        // Mapa horario → dados da consulta
         Map<String, Object[]> agendados = new LinkedHashMap<>();
         String sql = "SELECT c.idConsulta, TIME(c.dataHora) AS hora, "
                    + "p.nome AS paciente, cv.nome AS convenio, c.status "
                    + "FROM consulta c "
                    + "JOIN paciente p ON p.idPaciente = c.idPaciente "
                    + "LEFT JOIN convenio cv ON cv.idConvenio = c.idConvenio "
-                   + "WHERE c.idUsuario = ? AND DATE(c.dataHora) = ? "
-                   + "AND c.status != 'Cancelado'";
+                   + "WHERE c.idUsuario = ? AND DATE(c.dataHora) = ? AND c.status != 'Cancelado'";
         try (Connection conn = BDSConnection.getConexao();
              PreparedStatement st = conn.prepareStatement(sql)) {
             st.setInt(1, idMedico);
@@ -305,10 +359,8 @@ public class TelaConsultarEscalaMedica extends JFrame {
                     String hora = rs.getString("hora").substring(0, 5);
                     String conv = rs.getString("convenio");
                     agendados.put(hora, new Object[]{
-                        rs.getInt("idConsulta"),
-                        rs.getString("paciente"),
-                        conv != null ? conv : "Particular",
-                        rs.getString("status")
+                        rs.getInt("idConsulta"), rs.getString("paciente"),
+                        conv != null ? conv : "Particular", rs.getString("status")
                     });
                 }
             }
@@ -319,126 +371,259 @@ public class TelaConsultarEscalaMedica extends JFrame {
         }
 
         modelo.setRowCount(0);
-        int livres = 0, ocupados = 0;
+        int livres = 0, ocp = 0;
         for (String h : HORARIOS) {
             if (agendados.containsKey(h)) {
                 Object[] d = agendados.get(h);
-                int idC = (Integer) d[0];
-                String pac = (String) d[1];
-                String conv = (String) d[2];
-                String sts  = (String) d[3];
-                modelo.addRow(new Object[]{h, "Ocupado", pac, conv, sts});
-                idConsultaPorHorario.put(h, idC);
-                pacientePorHorario.put(h, pac);
-                ocupados++;
+                modelo.addRow(new Object[]{h, "Ocupado", d[1], d[2], d[3]});
+                idConsultaPorHorario.put(h, (Integer) d[0]);
+                pacientePorHorario.put(h, (String) d[1]);
+                ocp++;
             } else {
                 modelo.addRow(new Object[]{h, "Livre", "—", "—", "—"});
                 livres++;
             }
         }
 
-        btnAgendar.setEnabled(false);
-        btnCheckin.setEnabled(false);
+        atualizarBotoes();
         tabela.clearSelection();
-
         lblResumo.setText(String.format("%s — %s  |  %d livre(s)  |  %d ocupado(s)",
-            cbMedico.getSelectedItem(), dataBr, livres, ocupados));
+            cbMedico.getSelectedItem(), dataBr, livres, ocp));
     }
 
-    // ── DIALOG DE AGENDAMENTO ──────────────────────────────────────────────────
+    // ── CONFIRMAR PRESENÇA ────────────────────────────────────────────────────
+    private void confirmarPresenca() {
+        int row = tabela.getSelectedRow();
+        if (row < 0) return;
+        String horario  = (String) modelo.getValueAt(row, 0);
+        String paciente = (String) modelo.getValueAt(row, 2);
+        Integer idC = idConsultaPorHorario.get(horario);
+        if (idC == null) return;
 
-    private void abrirDialogAgendar(int idMedico, String nomeMedico, String dataBr, String horario) {
-        JDialog dlg = new JDialog(this, "Agendar Consulta", true);
-        dlg.setSize(480, 380);
+        int ok = JOptionPane.showConfirmDialog(this,
+            "Confirmar chegada de: " + paciente + "?", "Check-in", JOptionPane.YES_NO_OPTION);
+        if (ok != JOptionPane.YES_OPTION) return;
+
+        if (new ConsultaDAO().atualizarStatus(idC, "Presente")) {
+            JOptionPane.showMessageDialog(this, paciente + " registrado como Presente.",
+                "Check-in realizado", JOptionPane.INFORMATION_MESSAGE);
+            gerarEscala();
+        } else {
+            JOptionPane.showMessageDialog(this, "Erro ao atualizar. Verifique a conexão.",
+                "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // ── CANCELAR CONSULTA ─────────────────────────────────────────────────────
+    private void cancelarConsulta() {
+        int row = tabela.getSelectedRow();
+        if (row < 0) return;
+        String horario  = (String) modelo.getValueAt(row, 0);
+        String paciente = (String) modelo.getValueAt(row, 2);
+        Integer idC = idConsultaPorHorario.get(horario);
+        if (idC == null) return;
+
+        int ok = JOptionPane.showConfirmDialog(this,
+            "Cancelar a consulta de " + paciente + " às " + horario + "?\nEssa ação não pode ser desfeita.",
+            "Cancelar Consulta", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (ok != JOptionPane.YES_OPTION) return;
+
+        if (new ConsultaDAO().atualizarStatus(idC, "Cancelado")) {
+            JOptionPane.showMessageDialog(this, "Consulta cancelada.", "Cancelado", JOptionPane.INFORMATION_MESSAGE);
+            gerarEscala();
+        } else {
+            JOptionPane.showMessageDialog(this, "Erro ao cancelar. Verifique a conexão.",
+                "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // ── EDITAR CONSULTA ───────────────────────────────────────────────────────
+    private void editarConsulta() {
+        int row = tabela.getSelectedRow();
+        if (row < 0) return;
+        String horario = (String) modelo.getValueAt(row, 0);
+        Integer idC = idConsultaPorHorario.get(horario);
+        if (idC == null) return;
+
+        // Busca dados atuais da consulta para pré-preencher o dialog
+        int[] ids = buscarDadosConsulta(idC); // [idPaciente, idMedico, idConvenio]
+        if (ids == null) return;
+
+        java.util.Date dataSelecionada = ((SpinnerDateModel) spinnerData.getModel()).getDate();
+        String dataBr = new SimpleDateFormat("dd/MM/yyyy").format(dataSelecionada);
+
+        abrirDialogAgendar(idC, ids[1], (String) cbMedico.getSelectedItem(), dataBr, horario);
+    }
+
+    private int[] buscarDadosConsulta(int idConsulta) {
+        String sql = "SELECT idPaciente, idUsuario, COALESCE(idConvenio, 0) AS idConvenio FROM consulta WHERE idConsulta = ?";
+        try (Connection conn = BDSConnection.getConexao();
+             PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, idConsulta);
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next())
+                    return new int[]{rs.getInt("idPaciente"), rs.getInt("idUsuario"), rs.getInt("idConvenio")};
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar consulta: " + e.getMessage());
+        }
+        return null;
+    }
+
+    // ── DIALOG AGENDAR / EDITAR ───────────────────────────────────────────────
+    /**
+     * idConsultaEditar == -1 → novo agendamento; > 0 → edição de consulta existente
+     */
+    private void abrirDialogAgendar(int idConsultaEditar, int idMedicoAtual,
+                                     String nomeMedico, String dataBr, String horarioAtual) {
+        boolean editando = idConsultaEditar > 0;
+        JDialog dlg = new JDialog(this, editando ? "Editar Consulta" : "Agendar Consulta", true);
+        dlg.setSize(520, 470);
         dlg.setLocationRelativeTo(this);
         dlg.setResizable(false);
 
-        JPanel p = new JPanel(null);
-        p.setBackground(MARROM);
-        dlg.setContentPane(p);
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(MARROM);
+        dlg.setContentPane(root);
 
-        // Informações fixas
-        addInfoLabel(p, "Médico:",   nomeMedico, 30, 20);
-        addInfoLabel(p, "Data:",     dataBr,     30, 70);
-        addInfoLabel(p, "Horário:",  horario,    30, 120);
+        // Cabeçalho do dialog
+        JPanel dlgHeader = new JPanel(new BorderLayout());
+        dlgHeader.setBackground(new Color(45, 20, 4));
+        dlgHeader.setBorder(new EmptyBorder(12, 20, 12, 20));
+        JLabel dlgTitulo = new JLabel(editando ? "Editar dados da consulta" : "Nova Consulta");
+        dlgTitulo.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        dlgTitulo.setForeground(GOLD);
+        dlgHeader.add(dlgTitulo, BorderLayout.WEST);
+        root.add(dlgHeader, BorderLayout.NORTH);
+
+        // Formulário
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setBackground(MARROM);
+        form.setBorder(new EmptyBorder(16, 20, 8, 20));
+        root.add(form, BorderLayout.CENTER);
+
+        GridBagConstraints g = new GridBagConstraints();
+        g.insets  = new Insets(4, 4, 4, 4);
+        g.fill    = GridBagConstraints.HORIZONTAL;
+        g.anchor  = GridBagConstraints.WEST;
+        g.weightx = 1.0;
+
+        // Médico (read-only — o médico é o da grade selecionada)
+        g.gridx = 0; g.gridy = 0; g.gridwidth = 1; g.weightx = 0;
+        form.add(rotuloDlg("Médico:"), g);
+        g.gridx = 1; g.weightx = 1.0; g.gridwidth = 3;
+        JLabel lblMedicoVal = new JLabel(nomeMedico);
+        lblMedicoVal.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblMedicoVal.setForeground(CREME);
+        form.add(lblMedicoVal, g);
+
+        // Data
+        g.gridy = 1; g.gridx = 0; g.gridwidth = 1; g.weightx = 0;
+        form.add(rotuloDlg("Data:"), g);
+        g.gridx = 1; g.weightx = 0.5; g.gridwidth = 1;
+        SpinnerDateModel dmDlg = new SpinnerDateModel(
+            parseDateBr(dataBr), null, null, Calendar.DAY_OF_MONTH);
+        JSpinner spData = new JSpinner(dmDlg);
+        JSpinner.DateEditor edData = new JSpinner.DateEditor(spData, "dd/MM/yyyy");
+        spData.setEditor(edData);
+        estilizarSpinner(spData, edData);
+        form.add(spData, g);
+
+        // Horário
+        g.gridx = 2; g.weightx = 0;
+        form.add(rotuloDlg("Horário:"), g);
+        g.gridx = 3; g.weightx = 0.5;
+        JComboBox<String> cbHorario = new JComboBox<>(HORARIOS);
+        cbHorario.setSelectedItem(horarioAtual);
+        estilizarCombo(cbHorario);
+        form.add(cbHorario, g);
 
         // Paciente
-        JLabel lPac = rotulo("Paciente:");
-        lPac.setBounds(30, 175, 200, 18);
-        p.add(lPac);
-
+        g.gridy = 2; g.gridx = 0; g.gridwidth = 1; g.weightx = 0;
+        form.add(rotuloDlg("Paciente:"), g);
+        g.gridx = 1; g.weightx = 1.0; g.gridwidth = 3;
         JComboBox<String> cbPaciente = new JComboBox<>();
-        cbPaciente.setBackground(MEDIO);
-        cbPaciente.setForeground(CREME);
-        cbPaciente.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cbPaciente.setBorder(new LineBorder(GOLD, 1));
-        cbPaciente.setBounds(30, 197, 400, 32);
-        p.add(cbPaciente);
+        estilizarCombo(cbPaciente);
+        form.add(cbPaciente, g);
 
         // Convênio
-        JLabel lConv = rotulo("Convênio:");
-        lConv.setBounds(30, 242, 200, 18);
-        p.add(lConv);
-
+        g.gridy = 3; g.gridx = 0; g.gridwidth = 1; g.weightx = 0;
+        form.add(rotuloDlg("Convênio:"), g);
+        g.gridx = 1; g.weightx = 1.0; g.gridwidth = 3;
         JComboBox<String> cbConvenio = new JComboBox<>();
-        cbConvenio.setBackground(MEDIO);
-        cbConvenio.setForeground(CREME);
-        cbConvenio.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cbConvenio.setBorder(new LineBorder(GOLD, 1));
-        cbConvenio.setBounds(30, 264, 400, 32);
-        p.add(cbConvenio);
+        estilizarCombo(cbConvenio);
+        form.add(cbConvenio, g);
 
-        // Carrega pacientes e convênios
-        List<Integer> idsPacientes = new ArrayList<>();
-        List<Integer> idsConvenios = new ArrayList<>();
+        // Carrega listas do banco
+        List<Integer> idsPac = new ArrayList<>(), idsConv = new ArrayList<>();
+        int[] idsAtual = editando ? buscarDadosConsulta(idConsultaEditar) : null;
 
         cbPaciente.addItem("Selecione o paciente...");
-        idsPacientes.add(0);
-        for (Paciente pac : new PacienteDAO().listarTodos()) {
-            cbPaciente.addItem(pac.getNome());
-            idsPacientes.add(pac.getIdPaciente());
+        idsPac.add(0);
+        int selPac = 0;
+        List<Paciente> pacientes = new PacienteDAO().listarTodos();
+        for (int i = 0; i < pacientes.size(); i++) {
+            cbPaciente.addItem(pacientes.get(i).getNome());
+            idsPac.add(pacientes.get(i).getIdPaciente());
+            if (idsAtual != null && pacientes.get(i).getIdPaciente() == idsAtual[0]) selPac = i + 1;
         }
+        cbPaciente.setSelectedIndex(selPac);
 
         cbConvenio.addItem("Sem convênio (Particular)");
-        idsConvenios.add(0);
+        idsConv.add(0);
+        int selConv = 0;
         try (Connection conn = BDSConnection.getConexao();
              PreparedStatement st = conn.prepareStatement("SELECT idConvenio, nome FROM convenio ORDER BY nome");
              ResultSet rs = st.executeQuery()) {
+            int idx = 1;
             while (rs.next()) {
                 cbConvenio.addItem(rs.getString("nome"));
-                idsConvenios.add(rs.getInt("idConvenio"));
+                idsConv.add(rs.getInt("idConvenio"));
+                if (idsAtual != null && rs.getInt("idConvenio") == idsAtual[2]) selConv = idx;
+                idx++;
             }
-        } catch (SQLException e) {
-            System.err.println("Erro ao carregar convênios: " + e.getMessage());
+        } catch (SQLException ex) {
+            System.err.println("Erro ao carregar convênios: " + ex.getMessage());
         }
+        cbConvenio.setSelectedIndex(selConv);
 
-        // Botões
-        JButton btnCancelar = botaoSecundario("Cancelar");
-        btnCancelar.setBounds(160, 315, 120, 36);
-        p.add(btnCancelar);
+        // Botões do dialog
+        JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        btns.setBackground(MARROM);
+        JButton btnCancelarDlg = botaoSecundario("Cancelar");
+        JButton btnConfirmar   = botaoPrimario(editando ? "Salvar Alterações" : "Confirmar");
+        btns.add(btnCancelarDlg);
+        btns.add(btnConfirmar);
+        root.add(btns, BorderLayout.SOUTH);
 
-        JButton btnConfirmar = botaoPrimario("Confirmar");
-        btnConfirmar.setBounds(295, 315, 135, 36);
-        p.add(btnConfirmar);
-
-        btnCancelar.addActionListener(e -> dlg.dispose());
+        btnCancelarDlg.addActionListener(e -> dlg.dispose());
 
         btnConfirmar.addActionListener(e -> {
             if (cbPaciente.getSelectedIndex() == 0) {
                 JOptionPane.showMessageDialog(dlg, "Selecione o paciente.", "Aviso", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            int idPac  = idsPacientes.get(cbPaciente.getSelectedIndex());
-            int idConv = idsConvenios.get(cbConvenio.getSelectedIndex());
+            int idPac  = idsPac.get(cbPaciente.getSelectedIndex());
+            int idConv = idsConv.get(cbConvenio.getSelectedIndex());
+            java.util.Date dataDlg = ((SpinnerDateModel) spData.getModel()).getDate();
+            String dataSQL  = new SimpleDateFormat("yyyy-MM-dd").format(dataDlg);
+            String horaSQL  = (String) cbHorario.getSelectedItem();
+            String dataHora = dataSQL + " " + horaSQL + ":00";
 
-            String dataSQL = converterData(dataBr);
-            String dataHora = dataSQL + " " + horario + ":00";
+            boolean ok;
+            ConsultaDAO dao = new ConsultaDAO();
+            if (editando) {
+                ok = dao.atualizar(idConsultaEditar, idPac, idMedicoAtual, idConv > 0 ? idConv : null, dataHora);
+            } else {
+                ok = dao.inserir(idPac, idMedicoAtual, idConv > 0 ? idConv : null, dataHora);
+            }
 
-            boolean ok = new ConsultaDAO().inserir(idPac, idMedico, idConv > 0 ? idConv : null, dataHora);
             if (ok) {
                 JOptionPane.showMessageDialog(dlg,
-                    "Consulta agendada!\n" + cbPaciente.getSelectedItem() + " — " + dataBr + " às " + horario,
-                    "Agendado", JOptionPane.INFORMATION_MESSAGE);
+                    (editando ? "Consulta atualizada!" : "Consulta agendada!") + "\n"
+                    + cbPaciente.getSelectedItem() + " — "
+                    + new SimpleDateFormat("dd/MM/yyyy").format(dataDlg) + " às " + horaSQL,
+                    editando ? "Salvo" : "Agendado", JOptionPane.INFORMATION_MESSAGE);
                 dlg.dispose();
                 gerarEscala();
             } else {
@@ -450,29 +635,37 @@ public class TelaConsultarEscalaMedica extends JFrame {
         dlg.setVisible(true);
     }
 
-    // ── UTILITÁRIOS ────────────────────────────────────────────────────────────
+    // ── UTILITÁRIOS ───────────────────────────────────────────────────────────
 
-    private String converterData(String dataBr) {
-        try {
-            LocalDate ld = LocalDate.parse(dataBr, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-            return ld.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        } catch (Exception e) { return null; }
+    private java.util.Date parseDateBr(String dataBr) {
+        try { return new SimpleDateFormat("dd/MM/yyyy").parse(dataBr); }
+        catch (Exception e) { return new java.util.Date(); }
     }
 
-    private void addInfoLabel(JPanel p, String rotulo, String valor, int x, int y) {
-        JLabel lRot = new JLabel(rotulo);
-        lRot.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lRot.setForeground(ROTULO);
-        lRot.setBounds(x, y, 120, 16);
-        p.add(lRot);
-        JLabel lVal = new JLabel(valor);
-        lVal.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lVal.setForeground(CREME);
-        lVal.setBounds(x, y + 18, 400, 22);
-        p.add(lVal);
+    private void estilizarCombo(JComboBox<?> cb) {
+        cb.setBackground(MEDIO);
+        cb.setForeground(CREME);
+        cb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        cb.setBorder(new LineBorder(GOLD, 1));
+    }
+
+    private void estilizarSpinner(JSpinner sp, JSpinner.DateEditor ed) {
+        sp.setBackground(MEDIO);
+        sp.setBorder(new LineBorder(GOLD, 1));
+        ed.getTextField().setBackground(MEDIO);
+        ed.getTextField().setForeground(CREME);
+        ed.getTextField().setCaretColor(CREME);
+        ed.getTextField().setFont(new Font("Segoe UI", Font.PLAIN, 13));
     }
 
     private JLabel rotulo(String t) {
+        JLabel l = new JLabel(t);
+        l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        l.setForeground(ROTULO);
+        return l;
+    }
+
+    private JLabel rotuloDlg(String t) {
         JLabel l = new JLabel(t);
         l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         l.setForeground(ROTULO);
