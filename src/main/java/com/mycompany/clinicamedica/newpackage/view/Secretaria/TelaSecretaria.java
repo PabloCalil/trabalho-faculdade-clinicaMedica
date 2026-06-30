@@ -49,16 +49,14 @@ public class TelaSecretaria extends JFrame {
         corpo.setBorder(new EmptyBorder(30, 40, 30, 40));
 
         // Lateral de Ações Rápidas
-        JPanel menuAcoes = new JPanel(new GridLayout(4, 1, 0, 20));
+        JPanel menuAcoes = new JPanel(new GridLayout(2, 1, 0, 20));
         menuAcoes.setBackground(fundoClaro);
         menuAcoes.setPreferredSize(new Dimension(280, 0));
 
         JButton btnNovoPac = criarBotaoRecepcao("👤 Cadastrar Novo Paciente");
-        JButton btnAgendar = criarBotaoRecepcao("📅 Agendar Nova Consulta");
-        JButton btnCheckin = criarBotaoRecepcao("✅ Confirmar Presença (Check-in)");
-        JButton btnMedicos = criarBotaoRecepcao("🩺 Consultar Escala Médica");
+        JButton btnMedicos = criarBotaoRecepcao("🩺 Agenda Médica");
 
-        menuAcoes.add(btnNovoPac); menuAcoes.add(btnAgendar); menuAcoes.add(btnCheckin); menuAcoes.add(btnMedicos);
+        menuAcoes.add(btnNovoPac); menuAcoes.add(btnMedicos);
         corpo.add(menuAcoes, BorderLayout.WEST);
 
         // Central: Visualizador da Agenda Ativa
@@ -87,8 +85,6 @@ public class TelaSecretaria extends JFrame {
 
         // Cliques das Funções
         btnNovoPac.addActionListener(e -> new TelaCadastrarPaciente_dac().setVisible(true));
-        btnAgendar.addActionListener(e -> new TelaAgendarConsulta().setVisible(true));
-        btnCheckin.addActionListener(e -> new TelaConfirmarPresenca().setVisible(true));
         btnMedicos.addActionListener(e -> new TelaConsultarEscalaMedica().setVisible(true));
     }
 
