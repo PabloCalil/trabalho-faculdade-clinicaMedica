@@ -87,7 +87,7 @@ public class TelaSecretaria extends JFrame {
 
         // Cliques das Funções
         btnNovoPac.addActionListener(e -> new TelaCadastrarPaciente_dac().setVisible(true));
-        btnAgendar.addActionListener(e -> JOptionPane.showMessageDialog(this, "Abrindo calendário mestre para bloqueio de horários clínicos..."));
+        btnAgendar.addActionListener(e -> new TelaAgendarConsulta().setVisible(true));
         btnCheckin.addActionListener(e -> new TelaConfirmarPresenca().setVisible(true));
         btnMedicos.addActionListener(e -> new TelaConsultarEscalaMedica().setVisible(true));
     }
