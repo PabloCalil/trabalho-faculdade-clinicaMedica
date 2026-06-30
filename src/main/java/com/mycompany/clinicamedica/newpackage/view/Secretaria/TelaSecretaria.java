@@ -153,7 +153,8 @@ public class TelaSecretaria extends JFrame {
                         case "Presente"       -> { c.setBackground(new Color(210, 240, 215)); c.setForeground(new Color(20, 100, 40)); }
                         case "Agendado"       -> { c.setBackground(new Color(252, 248, 235)); c.setForeground(MARROM); }
                         case "Confirmado"     -> { c.setBackground(new Color(235, 248, 252)); c.setForeground(new Color(10, 80, 110)); }
-                        case "Concluído"      -> { c.setBackground(new Color(235, 235, 235)); c.setForeground(Color.GRAY); }
+                        case "Aguardando"     -> { c.setBackground(new Color(255, 250, 220)); c.setForeground(new Color(120, 90, 0)); }
+                        case "Concluído","Finalizado" -> { c.setBackground(new Color(235, 235, 235)); c.setForeground(Color.GRAY); }
                         default               -> { c.setBackground(Color.WHITE); c.setForeground(Color.DARK_GRAY); }
                     }
                 }
@@ -210,9 +211,9 @@ public class TelaSecretaria extends JFrame {
 
                 total++;
                 switch (status) {
-                    case "Presente"       -> presentes++;
+                    case "Presente","Aguardando" -> presentes++;
                     case "Agendado","Confirmado" -> agendados++;
-                    case "Em Atendimento" -> emAtendimento++;
+                    case "Em Atendimento"        -> emAtendimento++;
                 }
             }
 

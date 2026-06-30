@@ -301,7 +301,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
             int idMedico = idsMedicos.get(cbMedico.getSelectedIndex());
             String dataBr = new SimpleDateFormat("dd/MM/yyyy")
                 .format(((SpinnerDateModel) spinnerData.getModel()).getDate());
-            abrirDialogAgendar(-1, idMedico, (String) cbMedico.getSelectedItem(), dataBr, horario);
+            abrirDialogAgendar(-1, idMedico, 0, 0, (String) cbMedico.getSelectedItem(), dataBr, horario);
         });
 
         btnCheckin.addActionListener(e -> confirmarPresenca());
@@ -445,14 +445,13 @@ public class TelaConsultarEscalaMedica extends JFrame {
         Integer idC = idConsultaPorHorario.get(horario);
         if (idC == null) return;
 
-        // Busca dados atuais da consulta para pré-preencher o dialog
         int[] ids = buscarDadosConsulta(idC); // [idPaciente, idMedico, idConvenio]
         if (ids == null) return;
 
         java.util.Date dataSelecionada = ((SpinnerDateModel) spinnerData.getModel()).getDate();
         String dataBr = new SimpleDateFormat("dd/MM/yyyy").format(dataSelecionada);
 
-        abrirDialogAgendar(idC, ids[1], (String) cbMedico.getSelectedItem(), dataBr, horario);
+        abrirDialogAgendar(idC, ids[1], ids[0], ids[2], (String) cbMedico.getSelectedItem(), dataBr, horario);
     }
 
     private int[] buscarDadosConsulta(int idConsulta) {
@@ -472,9 +471,11 @@ public class TelaConsultarEscalaMedica extends JFrame {
 
     // ── DIALOG AGENDAR / EDITAR ───────────────────────────────────────────────
     /**
-     * idConsultaEditar == -1 → novo agendamento; > 0 → edição de consulta existente
+     * idConsultaEditar == -1 → novo agendamento; > 0 → edição.
+     * Para novos, passe idPacienteAtual=0 e idConvenioAtual=0.
      */
     private void abrirDialogAgendar(int idConsultaEditar, int idMedicoAtual,
+                                     int idPacienteAtual, int idConvenioAtual,
                                      String nomeMedico, String dataBr, String horarioAtual) {
         boolean editando = idConsultaEditar > 0;
         JDialog dlg = new JDialog(this, editando ? "Editar Consulta" : "Agendar Consulta", true);
@@ -510,7 +511,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
 
         // Médico (read-only — o médico é o da grade selecionada)
         g.gridx = 0; g.gridy = 0; g.gridwidth = 1; g.weightx = 0;
-        form.add(rotuloDlg("Médico:"), g);
+        form.add(rotulo("Médico:"), g);
         g.gridx = 1; g.weightx = 1.0; g.gridwidth = 3;
         JLabel lblMedicoVal = new JLabel(nomeMedico);
         lblMedicoVal.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -519,7 +520,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
 
         // Data
         g.gridy = 1; g.gridx = 0; g.gridwidth = 1; g.weightx = 0;
-        form.add(rotuloDlg("Data:"), g);
+        form.add(rotulo("Data:"), g);
         g.gridx = 1; g.weightx = 0.5; g.gridwidth = 1;
         SpinnerDateModel dmDlg = new SpinnerDateModel(
             parseDateBr(dataBr), null, null, Calendar.DAY_OF_MONTH);
@@ -531,7 +532,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
 
         // Horário
         g.gridx = 2; g.weightx = 0;
-        form.add(rotuloDlg("Horário:"), g);
+        form.add(rotulo("Horário:"), g);
         g.gridx = 3; g.weightx = 0.5;
         JComboBox<String> cbHorario = new JComboBox<>(HORARIOS);
         cbHorario.setSelectedItem(horarioAtual);
@@ -540,7 +541,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
 
         // Paciente
         g.gridy = 2; g.gridx = 0; g.gridwidth = 1; g.weightx = 0;
-        form.add(rotuloDlg("Paciente:"), g);
+        form.add(rotulo("Paciente:"), g);
         g.gridx = 1; g.weightx = 1.0; g.gridwidth = 3;
         JComboBox<String> cbPaciente = new JComboBox<>();
         estilizarCombo(cbPaciente);
@@ -548,7 +549,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
 
         // Convênio
         g.gridy = 3; g.gridx = 0; g.gridwidth = 1; g.weightx = 0;
-        form.add(rotuloDlg("Convênio:"), g);
+        form.add(rotulo("Convênio:"), g);
         g.gridx = 1; g.weightx = 1.0; g.gridwidth = 3;
         JComboBox<String> cbConvenio = new JComboBox<>();
         estilizarCombo(cbConvenio);
@@ -556,7 +557,6 @@ public class TelaConsultarEscalaMedica extends JFrame {
 
         // Carrega listas do banco
         List<Integer> idsPac = new ArrayList<>(), idsConv = new ArrayList<>();
-        int[] idsAtual = editando ? buscarDadosConsulta(idConsultaEditar) : null;
 
         cbPaciente.addItem("Selecione o paciente...");
         idsPac.add(0);
@@ -565,7 +565,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
         for (int i = 0; i < pacientes.size(); i++) {
             cbPaciente.addItem(pacientes.get(i).getNome());
             idsPac.add(pacientes.get(i).getIdPaciente());
-            if (idsAtual != null && pacientes.get(i).getIdPaciente() == idsAtual[0]) selPac = i + 1;
+            if (editando && pacientes.get(i).getIdPaciente() == idPacienteAtual) selPac = i + 1;
         }
         cbPaciente.setSelectedIndex(selPac);
 
@@ -579,7 +579,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
             while (rs.next()) {
                 cbConvenio.addItem(rs.getString("nome"));
                 idsConv.add(rs.getInt("idConvenio"));
-                if (idsAtual != null && rs.getInt("idConvenio") == idsAtual[2]) selConv = idx;
+                if (editando && rs.getInt("idConvenio") == idConvenioAtual) selConv = idx;
                 idx++;
             }
         } catch (SQLException ex) {
@@ -659,13 +659,6 @@ public class TelaConsultarEscalaMedica extends JFrame {
     }
 
     private JLabel rotulo(String t) {
-        JLabel l = new JLabel(t);
-        l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        l.setForeground(ROTULO);
-        return l;
-    }
-
-    private JLabel rotuloDlg(String t) {
         JLabel l = new JLabel(t);
         l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         l.setForeground(ROTULO);
