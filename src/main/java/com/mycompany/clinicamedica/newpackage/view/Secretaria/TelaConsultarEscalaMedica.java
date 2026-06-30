@@ -1,6 +1,17 @@
-package com.mycompany.clinicamedica.newpackage.view.Secretaria; // <-- Ajustado estritamente para o seu pacote real!
+package com.mycompany.clinicamedica.newpackage.view.Secretaria;
 
+import Services.BDSConnection;
 import java.awt.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -16,287 +27,287 @@ public class TelaConsultarEscalaMedica extends JFrame {
     private DefaultTableModel modeloTabela;
     private JLabel lblResumo;
 
-    // PALETA DE CORES TERROSAS PADRONIZADA DO PROJETO
-    private final Color corCremeClaro   = new Color(251, 251, 250); // #FBFBFA
-    private final Color corDestaqueGold = new Color(193, 158, 103); // #C19E67
-    private final Color corTomMedio     = new Color(110, 102, 95);  // #6E665F
-    private final Color corRotuloCinza  = new Color(180, 169, 158); // #B4A99E
-    private final Color corMarromEscuro = new Color(61, 28, 6);     // #3D1C06
+    private final List<Integer> idsMedicos = new ArrayList<>();
 
-    // Tons de apoio para situação dos horários
-    private final Color corLivre   = new Color(225, 240, 220); // verde suave
-    private final Color corOcupado = new Color(245, 225, 220); // terracota suave
+    private static final Color CREME  = new Color(251, 251, 250);
+    private static final Color GOLD   = new Color(193, 158, 103);
+    private static final Color MEDIO  = new Color(110, 102, 95);
+    private static final Color ROTULO = new Color(180, 169, 158);
+    private static final Color MARROM = new Color(61, 28, 6);
+    private static final Color LIVRE  = new Color(225, 240, 220);
+    private static final Color OCUPADO = new Color(245, 225, 220);
 
-    // Grade fixa de horários de atendimento da clínica
     private final String[] horarios = {
         "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
         "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30"
     };
 
     public TelaConsultarEscalaMedica() {
-        setTitle("🏥 Sistema Clínica Médica - Consultar Escala Médica");
+        setTitle("VITA — Escala e Disponibilidade Médica");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(1000, 700);
         setLocationRelativeTo(null);
         setResizable(false);
 
-        // Painel de Fundo
-        JPanel painelFundo = new JPanel();
-        painelFundo.setBackground(corTomMedio);
-        painelFundo.setLayout(null);
-        setContentPane(painelFundo);
+        JPanel fundo = new JPanel(null);
+        fundo.setBackground(MEDIO);
+        setContentPane(fundo);
 
-        // Título da Tela
         JLabel lblTitulo = new JLabel("Escala e Disponibilidade Médica");
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 32));
-        lblTitulo.setForeground(corCremeClaro);
-        lblTitulo.setBounds(50, 25, 600, 40);
-        painelFundo.add(lblTitulo);
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        lblTitulo.setForeground(CREME);
+        lblTitulo.setBounds(50, 18, 600, 38);
+        fundo.add(lblTitulo);
 
-        JLabel lblSubtitulo = new JLabel("Verifique horários livres, pacientes agendados e a ocupação do profissional.");
-        lblSubtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        lblSubtitulo.setForeground(corRotuloCinza);
-        lblSubtitulo.setBounds(50, 65, 700, 20);
-        painelFundo.add(lblSubtitulo);
+        JLabel lblSub = new JLabel("Selecione o médico e a data para ver os horários livres e ocupados.");
+        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblSub.setForeground(ROTULO);
+        lblSub.setBounds(50, 56, 700, 18);
+        fundo.add(lblSub);
 
-        // ====================================================================
-        // PAINEL DE FILTROS (Topo)
-        // ====================================================================
-        JPanel painelFiltros = new JPanel();
-        painelFiltros.setBackground(corMarromEscuro);
-        painelFiltros.setBounds(50, 100, 885, 80);
-        painelFiltros.setLayout(null);
-        painelFiltros.setBorder(new LineBorder(corDestaqueGold, 1, true));
-        painelFundo.add(painelFiltros);
+        // Painel de filtros
+        JPanel filtros = new JPanel(null);
+        filtros.setBackground(MARROM);
+        filtros.setBounds(50, 85, 885, 80);
+        filtros.setBorder(new LineBorder(GOLD, 1, true));
+        fundo.add(filtros);
 
-        Font fonteLabel = new Font("Segoe UI", Font.PLAIN, 13);
-
-        // Filtro Médico
         JLabel lblMedico = new JLabel("Médico / Especialista:");
-        lblMedico.setFont(fonteLabel);
-        lblMedico.setForeground(corRotuloCinza);
-        lblMedico.setBounds(20, 12, 200, 20);
-        painelFiltros.add(lblMedico);
+        lblMedico.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblMedico.setForeground(ROTULO);
+        lblMedico.setBounds(20, 10, 200, 20);
+        filtros.add(lblMedico);
 
-        cbMedico = new JComboBox<>(new String[]{
-            "Selecione o Médico",
-            "Dr. Arnaldo Silva (Cardiologia)",
-            "Dra. Beatriz Costa (Pediatria)",
-            "Dr. Carlos Eduardo (Clínico Geral)"
-        });
-        cbMedico.setBounds(20, 35, 330, 30);
-        cbMedico.setBackground(corTomMedio);
-        cbMedico.setForeground(corCremeClaro);
-        cbMedico.setBorder(new LineBorder(corDestaqueGold, 1));
-        painelFiltros.add(cbMedico);
+        cbMedico = new JComboBox<>();
+        cbMedico.setBounds(20, 33, 360, 30);
+        cbMedico.setBackground(MEDIO);
+        cbMedico.setForeground(CREME);
+        cbMedico.setBorder(new LineBorder(GOLD, 1));
+        filtros.add(cbMedico);
 
-        // Filtro Data
         JLabel lblData = new JLabel("Data (DD/MM/AAAA):");
-        lblData.setFont(fonteLabel);
-        lblData.setForeground(corRotuloCinza);
-        lblData.setBounds(380, 12, 200, 20);
-        painelFiltros.add(lblData);
+        lblData.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblData.setForeground(ROTULO);
+        lblData.setBounds(410, 10, 200, 20);
+        filtros.add(lblData);
 
-        txtData = new JTextField("25/05/2026");
-        txtData.setBounds(380, 35, 160, 30);
-        txtData.setBackground(corTomMedio);
-        txtData.setForeground(corCremeClaro);
-        txtData.setCaretColor(corCremeClaro);
-        txtData.setBorder(new LineBorder(corDestaqueGold, 1));
-        painelFiltros.add(txtData);
+        txtData = new JTextField(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        txtData.setBounds(410, 33, 180, 30);
+        txtData.setBackground(MEDIO);
+        txtData.setForeground(CREME);
+        txtData.setCaretColor(CREME);
+        txtData.setBorder(new LineBorder(GOLD, 1));
+        filtros.add(txtData);
 
-        // Botão Consultar
-        btnConsultar = new JButton("🔍 Gerar Escala");
+        btnConsultar = new JButton("Gerar Escala");
         btnConsultar.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnConsultar.setBackground(corDestaqueGold);
-        btnConsultar.setForeground(corMarromEscuro);
-        btnConsultar.setBounds(700, 30, 160, 35);
+        btnConsultar.setBackground(GOLD);
+        btnConsultar.setForeground(MARROM);
+        btnConsultar.setBounds(700, 28, 160, 35);
         btnConsultar.setFocusPainted(false);
         btnConsultar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        painelFiltros.add(btnConsultar);
+        filtros.add(btnConsultar);
 
-        // ====================================================================
-        // TABELA DA ESCALA (Centro)
-        // ====================================================================
-        String[] colunas = {"Horário", "Situação", "Paciente", "Tipo de Consulta"};
+        // Tabela
+        String[] colunas = {"Horário", "Situação", "Paciente", "Convênio"};
         modeloTabela = new DefaultTableModel(colunas, 0) {
-            @Override
-            public boolean isCellEditable(int linha, int coluna) {
-                return false; // Tela apenas de consulta
-            }
+            @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         tabelaEscala = new JTable(modeloTabela);
-        tabelaEscala.setBackground(corCremeClaro);
-        tabelaEscala.setGridColor(corRotuloCinza);
+        tabelaEscala.setBackground(CREME);
+        tabelaEscala.setGridColor(ROTULO);
         tabelaEscala.setRowHeight(28);
         tabelaEscala.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tabelaEscala.getTableHeader().setReorderingAllowed(false);
+        tabelaEscala.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        tabelaEscala.getColumnModel().getColumn(0).setMaxWidth(80);
+        tabelaEscala.getColumnModel().getColumn(1).setMaxWidth(90);
 
-        // Renderizador que pinta a linha conforme a situação do horário
-        DefaultTableCellRenderer renderizador = new DefaultTableCellRenderer() {
+        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
             @Override
-            public Component getTableCellRendererComponent(JTable tabela, Object valor,
-                    boolean selecionado, boolean foco, int linha, int coluna) {
-                Component c = super.getTableCellRendererComponent(tabela, valor, selecionado, foco, linha, coluna);
-                if (!selecionado) {
-                    String situacao = String.valueOf(tabela.getValueAt(linha, 1));
-                    c.setBackground("Livre".equals(situacao) ? corLivre : corOcupado);
-                    c.setForeground(corMarromEscuro);
+            public Component getTableCellRendererComponent(JTable t, Object val,
+                    boolean sel, boolean foc, int row, int col) {
+                Component c = super.getTableCellRendererComponent(t, val, sel, foc, row, col);
+                if (!sel) {
+                    String sit = String.valueOf(t.getValueAt(row, 1));
+                    c.setBackground("Livre".equals(sit) ? LIVRE : OCUPADO);
+                    c.setForeground(MARROM);
                 }
                 return c;
             }
         };
-        for (int i = 0; i < tabelaEscala.getColumnCount(); i++) {
-            tabelaEscala.getColumnModel().getColumn(i).setCellRenderer(renderizador);
-        }
+        for (int i = 0; i < tabelaEscala.getColumnCount(); i++)
+            tabelaEscala.getColumnModel().getColumn(i).setCellRenderer(renderer);
 
-        JScrollPane barraRolagem = new JScrollPane(tabelaEscala);
-        barraRolagem.setBounds(50, 200, 885, 360);
-        barraRolagem.setBorder(new LineBorder(corDestaqueGold, 1));
-        painelFundo.add(barraRolagem);
+        JScrollPane scroll = new JScrollPane(tabelaEscala);
+        scroll.setBounds(50, 185, 885, 370);
+        scroll.setBorder(new LineBorder(GOLD, 1));
+        fundo.add(scroll);
 
-        // Resumo de ocupação
-        lblResumo = new JLabel("Selecione um médico e clique em \"Gerar Escala\" para visualizar a agenda.");
-        lblResumo.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblResumo.setForeground(corCremeClaro);
-        lblResumo.setBounds(50, 570, 885, 25);
-        painelFundo.add(lblResumo);
+        // Legenda
+        JPanel legenda = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 4));
+        legenda.setBackground(MEDIO);
+        legenda.setBounds(50, 560, 400, 28);
+        fundo.add(legenda);
+        legenda.add(legendaItem(LIVRE, "Livre"));
+        legenda.add(legendaItem(OCUPADO, "Ocupado"));
 
-        // ====================================================================
-        // BOTÕES DE RODAPÉ
-        // ====================================================================
-        btnAgendarLivre = new JButton("Agendar no Horário Livre");
-        btnAgendarLivre.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnAgendarLivre.setBackground(corMarromEscuro);
-        btnAgendarLivre.setForeground(corCremeClaro);
-        btnAgendarLivre.setBounds(675, 610, 260, 40);
-        btnAgendarLivre.setFocusPainted(false);
-        btnAgendarLivre.setBorder(new LineBorder(corDestaqueGold, 1));
-        btnAgendarLivre.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        painelFundo.add(btnAgendarLivre);
+        lblResumo = new JLabel("Selecione um médico e clique em \"Gerar Escala\".");
+        lblResumo.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblResumo.setForeground(CREME);
+        lblResumo.setBounds(50, 562, 885, 22);
+        fundo.add(lblResumo);
 
-        btnVoltar = new JButton("← Voltar ao Menu");
+        // Botões rodapé
+        btnVoltar = new JButton("← Voltar");
         btnVoltar.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnVoltar.setBackground(new Color(180, 70, 70));
         btnVoltar.setForeground(Color.WHITE);
-        btnVoltar.setBounds(50, 610, 160, 40);
+        btnVoltar.setBounds(50, 610, 130, 40);
         btnVoltar.setFocusPainted(false);
         btnVoltar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        painelFundo.add(btnVoltar);
+        fundo.add(btnVoltar);
 
-        // ====================================================================
-        // COMPORTAMENTO / EVENTOS
-        // ====================================================================
+        btnAgendarLivre = new JButton("Agendar neste Horário Livre");
+        btnAgendarLivre.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnAgendarLivre.setBackground(MARROM);
+        btnAgendarLivre.setForeground(CREME);
+        btnAgendarLivre.setBounds(620, 610, 280, 40);
+        btnAgendarLivre.setFocusPainted(false);
+        btnAgendarLivre.setBorder(new LineBorder(GOLD, 1));
+        btnAgendarLivre.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        fundo.add(btnAgendarLivre);
+
+        carregarMedicos();
+        configurarEventos();
+    }
+
+    private void carregarMedicos() {
+        cbMedico.addItem("Selecione o médico...");
+        idsMedicos.add(0);
+
+        String sql = "SELECT u.idUsuario, u.nome, e.nome AS especialidade "
+                   + "FROM usuario u "
+                   + "JOIN medico m ON m.idUsuario = u.idUsuario "
+                   + "LEFT JOIN especialidade e ON e.idEspecialidade = m.idEspecialidade "
+                   + "WHERE u.ativo = 1 ORDER BY u.nome";
+        try (Connection conn = BDSConnection.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                String esp = rs.getString("especialidade");
+                cbMedico.addItem(rs.getString("nome") + (esp != null ? " (" + esp + ")" : ""));
+                idsMedicos.add(rs.getInt("idUsuario"));
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao carregar médicos: " + e.getMessage(),
+                "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void configurarEventos() {
         btnConsultar.addActionListener(e -> gerarEscala());
 
         btnAgendarLivre.addActionListener(e -> {
             int linha = tabelaEscala.getSelectedRow();
-            if (linha == -1) {
+            if (linha < 0) {
                 JOptionPane.showMessageDialog(this,
-                        "Selecione um horário livre na tabela para agendar.",
-                        "Aviso", JOptionPane.WARNING_MESSAGE);
+                    "Selecione um horário na tabela para agendar.", "Aviso", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            String situacao = tabelaEscala.getValueAt(linha, 1).toString();
-            if (!"Livre".equals(situacao)) {
+            if (!"Livre".equals(modeloTabela.getValueAt(linha, 1))) {
                 JOptionPane.showMessageDialog(this,
-                        "Este horário já está ocupado. Escolha um horário livre.",
-                        "Horário Indisponível", JOptionPane.ERROR_MESSAGE);
+                    "Este horário já está ocupado. Escolha um horário livre.",
+                    "Horário Indisponível", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            // Encaminha para a tela de agendamento já existente
-            new TelaAgendarConsulta().setVisible(true);
+            if (cbMedico.getSelectedIndex() == 0) return;
+
+            String horarioSelecionado = (String) modeloTabela.getValueAt(linha, 0);
+            int idMedico = idsMedicos.get(cbMedico.getSelectedIndex());
+            String data  = txtData.getText().trim();
+
+            TelaAgendarConsulta tela = new TelaAgendarConsulta();
+            tela.preencherAgendamento(idMedico, data, horarioSelecionado);
+            tela.setVisible(true);
         });
 
-        btnVoltar.addActionListener(e -> this.dispose());
+        btnVoltar.addActionListener(e -> dispose());
     }
 
-    /**
-     * Monta a grade de horários do médico selecionado, marcando cada slot como
-     * "Livre" ou "Ocupado" (com o paciente e o tipo de consulta).
-     */
     private void gerarEscala() {
         if (cbMedico.getSelectedIndex() == 0) {
-            JOptionPane.showMessageDialog(this,
-                    "Selecione um médico para gerar a escala.",
-                    "Médico não informado", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Selecione um médico.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        if (txtData.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Informe a data da escala.",
-                    "Data não informada", JOptionPane.WARNING_MESSAGE);
+        String dataTexto = txtData.getText().trim();
+        String dataSQL = converterData(dataTexto);
+        if (dataSQL == null) {
+            JOptionPane.showMessageDialog(this, "Data inválida. Use DD/MM/AAAA.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        String medico = cbMedico.getSelectedItem().toString();
-        String[][] ocupados = obterAgendamentos(medico);
+        int idMedico = idsMedicos.get(cbMedico.getSelectedIndex());
+        Map<String, String[]> ocupados = buscarConsultasBanco(idMedico, dataSQL);
 
         modeloTabela.setRowCount(0);
-        int totalLivres = 0, totalOcupados = 0;
-
-        for (String horario : horarios) {
-            String[] reserva = buscarReserva(ocupados, horario);
-            if (reserva == null) {
-                modeloTabela.addRow(new Object[]{horario, "Livre", "—", "—"});
-                totalLivres++;
+        int livres = 0, ocp = 0;
+        for (String h : horarios) {
+            if (ocupados.containsKey(h)) {
+                String[] dados = ocupados.get(h);
+                modeloTabela.addRow(new Object[]{h, "Ocupado", dados[0], dados[1]});
+                ocp++;
             } else {
-                modeloTabela.addRow(new Object[]{horario, "Ocupado", reserva[1], reserva[2]});
-                totalOcupados++;
+                modeloTabela.addRow(new Object[]{h, "Livre", "—", "—"});
+                livres++;
             }
         }
 
-        lblResumo.setText(String.format(
-                "Escala de %s em %s  —  %d horário(s) livre(s)  |  %d ocupado(s)",
-                medico, txtData.getText().trim(), totalLivres, totalOcupados));
+        lblResumo.setText(String.format("%s — %s  |  %d livre(s)  |  %d ocupado(s)",
+            cbMedico.getSelectedItem(), dataTexto, livres, ocp));
     }
 
-    /** Procura uma reserva pelo horário dentro da lista de agendamentos do médico. */
-    private String[] buscarReserva(String[][] agendamentos, String horario) {
-        for (String[] linha : agendamentos) {
-            if (linha[0].equals(horario)) {
-                return linha;
+    private Map<String, String[]> buscarConsultasBanco(int idMedico, String dataSQL) {
+        Map<String, String[]> mapa = new LinkedHashMap<>();
+        String sql = "SELECT TIME(c.dataHora) AS hora, p.nome AS paciente, cv.nome AS convenio "
+                   + "FROM consulta c "
+                   + "JOIN paciente p ON p.idPaciente = c.idPaciente "
+                   + "LEFT JOIN convenio cv ON cv.idConvenio = c.idConvenio "
+                   + "WHERE c.idUsuario = ? AND DATE(c.dataHora) = ? "
+                   + "AND c.status != 'Cancelado'";
+        try (Connection conn = BDSConnection.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idMedico);
+            stmt.setString(2, dataSQL);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String hora = rs.getString("hora").substring(0, 5);
+                    String conv = rs.getString("convenio");
+                    mapa.put(hora, new String[]{rs.getString("paciente"), conv != null ? conv : "Particular"});
+                }
             }
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar consultas: " + e.getMessage());
         }
-        return null;
+        return mapa;
     }
 
-    /**
-     * Fonte de dados simulada dos agendamentos por médico, no mesmo padrão das
-     * demais telas de consulta do projeto. Cada linha: {horário, paciente, tipo}.
-     * Quando houver persistência (ConsultaDAO), este método é o ponto de troca.
-     */
-    private String[][] obterAgendamentos(String medico) {
-        if (medico.startsWith("Dr. Arnaldo")) {
-            return new String[][]{
-                {"08:00", "Carlos Eduardo Santos", "Particular"},
-                {"09:30", "Juliana Ribeiro Dias", "Convênio Médico"},
-                {"14:00", "Marcos Antônio Lima", "Retorno"}
-            };
-        } else if (medico.startsWith("Dra. Beatriz")) {
-            return new String[][]{
-                {"09:00", "Ana Julia Ferreira", "Retorno"},
-                {"10:00", "Alice Vieira Ramos", "Convênio Médico"},
-                {"15:30", "Sofia Andrade Pinto", "Particular"}
-            };
-        } else if (medico.startsWith("Dr. Carlos")) {
-            return new String[][]{
-                {"08:30", "Mariana Costa Souza", "Particular"},
-                {"10:30", "Roberto Nunes Aguiar", "Convênio Médico"},
-                {"13:00", "Patrícia Gomes Reis", "Retorno"},
-                {"16:00", "Fernando Lopes Cruz", "Particular"}
-            };
-        }
-        return new String[][]{};
-    }
-
-    public static void main(String[] args) {
+    private String converterData(String data) {
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {}
+            LocalDate ld = LocalDate.parse(data, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            return ld.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
-        SwingUtilities.invokeLater(() -> {
-            new TelaConsultarEscalaMedica().setVisible(true);
-        });
+    private JLabel legendaItem(Color cor, String texto) {
+        JLabel lbl = new JLabel("  " + texto);
+        lbl.setOpaque(true);
+        lbl.setBackground(cor);
+        lbl.setForeground(MARROM);
+        lbl.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lbl.setBorder(BorderFactory.createLineBorder(ROTULO));
+        return lbl;
     }
 }

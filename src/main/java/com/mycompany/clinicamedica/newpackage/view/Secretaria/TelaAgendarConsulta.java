@@ -116,6 +116,17 @@ public class TelaAgendarConsulta extends JFrame {
         configurarEventos();
     }
 
+    public void preencherAgendamento(int idMedico, String data, String hora) {
+        for (int i = 0; i < idsMedicos.size(); i++) {
+            if (idsMedicos.get(i) == idMedico) {
+                cbMedico.setSelectedIndex(i);
+                break;
+            }
+        }
+        txtData.setText(data);
+        txtHorario.setText(hora);
+    }
+
     private void carregarDados() {
         // Pacientes
         cbPaciente.addItem("Selecione o paciente...");
