@@ -9,6 +9,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
@@ -110,7 +112,13 @@ public class TelaCadastrarPaciente_dac extends JFrame {
 
         txtNascimento = criarCampoTexto();
         txtNascimento.setBounds(40, 198, 330, 35);
+        aplicarFiltroDigitos(txtNascimento, 8);
         painelForm.add(txtNascimento);
+
+        JLabel lblContNasc = criarContador("0/8 dígitos  (DDMMAAAA)");
+        lblContNasc.setBounds(40, 235, 260, 16);
+        painelForm.add(lblContNasc);
+        vincularContador(txtNascimento, lblContNasc, 8);
 
         JLabel lblSexo = new JLabel("Sexo:");
         lblSexo.setFont(fonteLabel);
@@ -127,22 +135,22 @@ public class TelaCadastrarPaciente_dac extends JFrame {
         JLabel lblEnd = new JLabel("Endereço Residencial:");
         lblEnd.setFont(fonteLabel);
         lblEnd.setForeground(corRotuloCinza);
-        lblEnd.setBounds(40, 250, 200, 20);
+        lblEnd.setBounds(40, 262, 200, 20);
         painelForm.add(lblEnd);
 
         txtEndereco = criarCampoTexto();
-        txtEndereco.setBounds(40, 273, 700, 35);
+        txtEndereco.setBounds(40, 285, 700, 35);
         painelForm.add(txtEndereco);
 
         // --- Convênio | Carteirinha ---
         JLabel lblConvenio = new JLabel("Convênio:");
         lblConvenio.setFont(fonteLabel);
         lblConvenio.setForeground(corRotuloCinza);
-        lblConvenio.setBounds(40, 325, 200, 20);
+        lblConvenio.setBounds(40, 337, 200, 20);
         painelForm.add(lblConvenio);
 
         cbConvenio = new JComboBox<>();
-        cbConvenio.setBounds(40, 348, 330, 35);
+        cbConvenio.setBounds(40, 360, 330, 35);
         estilizarCombo(cbConvenio);
         painelForm.add(cbConvenio);
         carregarConvenios();
@@ -150,12 +158,18 @@ public class TelaCadastrarPaciente_dac extends JFrame {
         JLabel lblCarteirinha = new JLabel("Número da Carteirinha:");
         lblCarteirinha.setFont(fonteLabel);
         lblCarteirinha.setForeground(corRotuloCinza);
-        lblCarteirinha.setBounds(410, 325, 220, 20);
+        lblCarteirinha.setBounds(410, 337, 220, 20);
         painelForm.add(lblCarteirinha);
 
         txtCarteirinha = criarCampoTexto();
-        txtCarteirinha.setBounds(410, 348, 330, 35);
+        txtCarteirinha.setBounds(410, 360, 330, 35);
+        aplicarFiltroDigitos(txtCarteirinha, 20);
         painelForm.add(txtCarteirinha);
+
+        JLabel lblContCart = criarContador("0/20 dígitos");
+        lblContCart.setBounds(410, 397, 200, 16);
+        painelForm.add(lblContCart);
+        vincularContador(txtCarteirinha, lblContCart, 20);
 
         // --- Botões ---
         btnSalvar = new JButton("Salvar Cadastro");
@@ -284,6 +298,25 @@ public class TelaCadastrarPaciente_dac extends JFrame {
             return;
         }
 
+        String nascRaw = txtNascimento.getText().trim();
+        if (nascRaw.length() != 8) {
+            JOptionPane.showMessageDialog(this,
+                "Data de nascimento deve ter 8 dígitos (DDMMAAAA). Você inseriu " + nascRaw.length() + ".",
+                "Data inválida", JOptionPane.ERROR_MESSAGE);
+            txtNascimento.requestFocus();
+            return;
+        }
+        String nascFormatado = nascRaw.substring(0, 2) + "/" + nascRaw.substring(2, 4) + "/" + nascRaw.substring(4, 8);
+        try {
+            LocalDate.parse(nascFormatado, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                "Data de nascimento inválida: " + nascFormatado + "\nVerifique dia, mês e ano.",
+                "Data inválida", JOptionPane.ERROR_MESSAGE);
+            txtNascimento.requestFocus();
+            return;
+        }
+
         if (cbSexo.getSelectedIndex() == 0) {
             JOptionPane.showMessageDialog(this,
                 "Por favor, selecione o sexo do paciente.",
@@ -295,7 +328,7 @@ public class TelaCadastrarPaciente_dac extends JFrame {
         paciente.setNome(txtNome.getText().trim());
         paciente.setCpf(txtCPF.getText().trim());
         paciente.setTelefone(txtTelefone.getText().trim());
-        paciente.setDataNascimento(txtNascimento.getText().trim());
+        paciente.setDataNascimento(nascFormatado);
         paciente.setEndereco(txtEndereco.getText().trim());
         paciente.setSexo(cbSexo.getSelectedItem().toString());
         paciente.setNumeroCarteirinha(txtCarteirinha.getText().trim());
