@@ -98,7 +98,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
         lData.setBounds(430, 8, 80, 18);
         pFiltros.add(lData);
 
-        SpinnerDateModel dateModel = new SpinnerDateModel(new Date(), null, null, Calendar.DAY_OF_MONTH);
+        SpinnerDateModel dateModel = new SpinnerDateModel(new java.util.Date(), null, null, Calendar.DAY_OF_MONTH);
         spinnerData = new JSpinner(dateModel);
         JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(spinnerData, "dd/MM/yyyy");
         spinnerData.setEditor(dateEditor);
