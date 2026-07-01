@@ -12,15 +12,16 @@ public class ConsultaDAO {
     // Busca consultas do dia para um médico específico
     public List<Consulta> listarFilaDoDia(int idUsuario) {
         List<Consulta> lista = new ArrayList<>();
-        String sql = "SELECT c.idConsulta, c.idPaciente, c.dataHora, c.status,  "
+        String sql = "SELECT c.idConsulta, c.idPaciente, c.dataHora, s.nome AS status, "
                    + "p.nome AS nomePaciente, "
                    + "cv.nome AS nomeConvenio "
                    + "FROM consulta c "
                    + "JOIN paciente p ON p.idPaciente = c.idPaciente "
+                   + "JOIN status s ON s.idStatus = c.idStatus "
                    + "LEFT JOIN convenio cv ON cv.idConvenio = c.idConvenio "
                    + "WHERE c.idUsuario = ? "
                    + "AND DATE(c.dataHora) = CURDATE() "
-                   + "AND c.status != 'Cancelado' "
+                   + "AND s.nome != 'Cancelado' "
                    + "ORDER BY c.dataHora";
 
         try (Connection conn = BDSConnection.getConexao();
@@ -31,6 +32,7 @@ public class ConsultaDAO {
                 while (rs.next()) {
                     Consulta c = new Consulta();
                     c.setIdConsulta(rs.getInt("idConsulta"));
+                    c.setIdPaciente(rs.getInt("idPaciente"));
                     c.setDataHora(rs.getString("dataHora"));
                     c.setStatus(rs.getString("status"));
                     c.setNomePaciente(rs.getString("nomePaciente"));
@@ -45,8 +47,8 @@ public class ConsultaDAO {
     }
 
     public boolean inserir(int idPaciente, int idMedico, Integer idConvenio, String dataHora) {
-        String sql = "INSERT INTO consulta (idPaciente, idUsuario, idConvenio, dataHora, status) "
-                   + "VALUES (?, ?, ?, ?, 'Agendado')";
+        String sql = "INSERT INTO consulta (idPaciente, idUsuario, idConvenio, dataHora, idStatus) "
+                   + "VALUES (?, ?, ?, ?, (SELECT idStatus FROM status WHERE nome = 'Agendado'))";
         try (Connection conn = BDSConnection.getConexao();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, idPaciente);
@@ -65,16 +67,17 @@ public class ConsultaDAO {
 
     public List<Consulta> listarParaCheckin() {
         List<Consulta> lista = new ArrayList<>();
-        String sql = "SELECT c.idConsulta, c.dataHora, c.status, "
+        String sql = "SELECT c.idConsulta, c.dataHora, s.nome AS status, "
                    + "p.nome AS nomePaciente, "
                    + "u.nome AS nomeMedico, "
                    + "cv.nome AS nomeConvenio "
                    + "FROM consulta c "
                    + "JOIN paciente p ON p.idPaciente = c.idPaciente "
                    + "JOIN usuario u ON u.idUsuario = c.idUsuario "
+                   + "JOIN status s ON s.idStatus = c.idStatus "
                    + "LEFT JOIN convenio cv ON cv.idConvenio = c.idConvenio "
                    + "WHERE DATE(c.dataHora) = CURDATE() "
-                   + "AND c.status IN ('Agendado', 'Confirmado') "
+                   + "AND s.nome = 'Agendado' "
                    + "ORDER BY c.dataHora";
         try (Connection conn = BDSConnection.getConexao();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -115,7 +118,11 @@ public class ConsultaDAO {
     }
 
     public boolean atualizarStatus(int idConsulta, String novoStatus) {
-        String sql = "UPDATE consulta SET status = ? WHERE idConsulta = ?";
+        // Converte o nome do status para o idStatus correspondente (FK).
+        String sql = "UPDATE consulta c "
+                   + "JOIN status s ON s.nome = ? "
+                   + "SET c.idStatus = s.idStatus "
+                   + "WHERE c.idConsulta = ?";
         try (Connection conn = BDSConnection.getConexao();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, novoStatus);

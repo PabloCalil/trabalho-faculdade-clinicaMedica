@@ -1,8 +1,11 @@
 package com.mycompany.clinicamedica.newpackage.view;
 
+import Services.ChamadaDAO;
 import Services.Consulta;
 import Services.ConsultaDAO;
+import Services.StatusDAO;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,17 +22,13 @@ public class TelaMedico extends JFrame {
     private JTable tabela;
     private DefaultTableModel modeloTabela;
     private final ConsultaDAO consultaDAO = new ConsultaDAO();
+    private final ChamadaDAO chamadaDAO   = new ChamadaDAO();
+    private final StatusDAO  statusDAO    = new StatusDAO();
 
-    // Lista completa carregada do banco (para filtro local)
     private List<Consulta> listaCompleta;
 
-    private static final String[] STATUS_OPCOES = {
-        "Agendado", "Aguardando", "Em Atendimento", "Finalizado", "Cancelado"
-    };
-
-    private static final String[] STATUS_FILTRO = {
-        "Todos", "Agendado", "Aguardando", "Em Atendimento", "Finalizado", "Cancelado"
-    };
+    // Opcao usada apenas para limpar o filtro e exibir toda a fila.
+    private static final String FILTRO_TODOS = "Todos";
 
     private final Color marromEscuro = new Color(61, 28, 6);
     private final Color corGold      = new Color(193, 158, 103);
@@ -96,47 +95,46 @@ public class TelaMedico extends JFrame {
         JPanel topoTabela = new JPanel(new BorderLayout());
         topoTabela.setBackground(fundoClaro);
 
-        JLabel lblTabela = new JLabel("Fila de Atendimento — " + java.time.LocalDate.now());
-        lblTabela.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        JLabel lblTabela = new JLabel("Fila - " + java.time.LocalDate.now());
+        lblTabela.setFont(new Font("Segoe UI", Font.BOLD, 12));
         lblTabela.setForeground(marromEscuro);
         topoTabela.add(lblTabela, BorderLayout.WEST);
 
         JPanel painelBotoesTopo = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         painelBotoesTopo.setBackground(fundoClaro);
 
-        // ComboBox de filtro
-        JComboBox<String> cbFiltro = new JComboBox<>(STATUS_FILTRO);
-        cbFiltro.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cbFiltro.setPreferredSize(new Dimension(160, 32));
-        cbFiltro.setToolTipText("Filtrar fila por status");
-
-        // ComboBox de alteração de status
-        JComboBox<String> cbStatus = new JComboBox<>(STATUS_OPCOES);
+        // O medico apenas visualiza/filtra: o combo serve so para filtrar a fila.
+        List<String> opcoesFiltro = new ArrayList<>();
+        opcoesFiltro.add(FILTRO_TODOS);
+        opcoesFiltro.addAll(statusDAO.listarNomes());
+        JComboBox<String> cbStatus = new JComboBox<>(opcoesFiltro.toArray(new String[0]));
         cbStatus.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cbStatus.setPreferredSize(new Dimension(160, 32));
+        cbStatus.setPreferredSize(new Dimension(180, 32));
 
-        JButton btnAlterarStatus = new JButton("Alterar Status");
-        btnAlterarStatus.setBackground(corGold);
-        btnAlterarStatus.setForeground(marromEscuro);
-        btnAlterarStatus.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnAlterarStatus.setFocusPainted(false);
-        btnAlterarStatus.setOpaque(true);
-        btnAlterarStatus.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnAlterarStatus.setBorder(new LineBorder(corGold.darker(), 1));
+        Dimension tamBotao = new Dimension(140, 32);
 
-        JButton btnAtualizar = new JButton("↻ Atualizar Fila");
+        JButton btnFiltrar = new JButton("Filtrar");
+        btnFiltrar.setBackground(corGold);
+        btnFiltrar.setForeground(marromEscuro);
+        btnFiltrar.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnFiltrar.setFocusPainted(false);
+        btnFiltrar.setOpaque(true);
+        btnFiltrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnFiltrar.setBorder(new LineBorder(corGold.darker(), 1));
+        btnFiltrar.setPreferredSize(tamBotao);
+
+        JButton btnAtualizar = new JButton("Atualizar Fila");
         btnAtualizar.setBackground(corTomMedio);
         btnAtualizar.setForeground(Color.WHITE);
         btnAtualizar.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnAtualizar.setFocusPainted(false);
         btnAtualizar.setOpaque(true);
         btnAtualizar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnAtualizar.setPreferredSize(tamBotao);
 
-        painelBotoesTopo.add(new JLabel("Filtrar:"));
-        painelBotoesTopo.add(cbFiltro);
         painelBotoesTopo.add(new JLabel("Status:"));
         painelBotoesTopo.add(cbStatus);
-        painelBotoesTopo.add(btnAlterarStatus);
+        painelBotoesTopo.add(btnFiltrar);
         painelBotoesTopo.add(btnAtualizar);
         topoTabela.add(painelBotoesTopo, BorderLayout.EAST);
 
@@ -145,7 +143,7 @@ public class TelaMedico extends JFrame {
         pnlTabela.add(topoTabela, BorderLayout.NORTH);
 
         // ================================================================
-        // TABELA — 6 colunas: ID, Horário, Paciente, Status, Convênio, idPaciente
+        // TABELA
         // ================================================================
         String[] colunas = {"ID", "Horário", "Paciente", "Status", "Convênio", "idPaciente"};
         modeloTabela = new DefaultTableModel(colunas, 0) {
@@ -163,11 +161,11 @@ public class TelaMedico extends JFrame {
                               ? modeloTabela.getValueAt(row, 3).toString() : "";
                 if (!isRowSelected(row)) {
                     switch (status) {
-                        case "Em Atendimento" -> c.setBackground(new Color(255, 243, 205));
-                        case "Finalizado"     -> c.setBackground(new Color(220, 240, 220));
-                        case "Cancelado"      -> c.setBackground(new Color(250, 220, 220));
-                        case "Aguardando"     -> c.setBackground(new Color(235, 245, 255));
-                        default               -> c.setBackground(Color.WHITE);
+                        case "Em Atendimento"      -> c.setBackground(new Color(255, 243, 205));
+                        case "Consulta Finalizada" -> c.setBackground(new Color(220, 240, 220));
+                        case "Cancelado"           -> c.setBackground(new Color(250, 220, 220));
+                        case "Aguardando Chamada"  -> c.setBackground(new Color(235, 245, 255));
+                        default                    -> c.setBackground(Color.WHITE);
                     }
                 }
                 return c;
@@ -182,9 +180,8 @@ public class TelaMedico extends JFrame {
         tabela.getTableHeader().setForeground(corGold);
         tabela.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         tabela.getTableHeader().setReorderingAllowed(false);
-        tabela.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        tabela.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-        // Oculta coluna ID (0) e idPaciente (5)
         tabela.getColumnModel().getColumn(0).setMinWidth(0);
         tabela.getColumnModel().getColumn(0).setMaxWidth(0);
         tabela.getColumnModel().getColumn(0).setWidth(0);
@@ -192,9 +189,9 @@ public class TelaMedico extends JFrame {
         tabela.getColumnModel().getColumn(5).setMaxWidth(0);
         tabela.getColumnModel().getColumn(5).setWidth(0);
         tabela.getColumnModel().getColumn(1).setPreferredWidth(80);
-        tabela.getColumnModel().getColumn(2).setPreferredWidth(250);
-        tabela.getColumnModel().getColumn(3).setPreferredWidth(130);
-        tabela.getColumnModel().getColumn(4).setPreferredWidth(150);
+        tabela.getColumnModel().getColumn(2).setPreferredWidth(300);
+        tabela.getColumnModel().getColumn(3).setPreferredWidth(150);
+        tabela.getColumnModel().getColumn(4).setPreferredWidth(200);
 
         JScrollPane scroll = new JScrollPane(tabela);
         scroll.setBorder(new LineBorder(corGold));
@@ -202,19 +199,26 @@ public class TelaMedico extends JFrame {
         corpo.add(pnlTabela, BorderLayout.CENTER);
 
         // ================================================================
-        // PAINEL LATERAL DE AÇÕES
+        // PAINEL LATERAL — 4 botões
         // ================================================================
-        JPanel acoes = new JPanel(new GridLayout(3, 1, 0, 15));
+        JPanel acoes = new JPanel(new GridLayout(4, 1, 0, 15));
         acoes.setBackground(fundoClaro);
         acoes.setPreferredSize(new Dimension(220, 0));
 
-        JButton btnProntuario = criarBotaoClinico("Chamar Prontuário");
-        JButton btnHistorico  = criarBotaoClinico("Histórico Clínico");
-        JButton btnReceita    = criarBotaoClinico("Emitir Receita");
+        JButton btnProntuario     = criarBotaoClinico("Chamar Prontuário");
+        JButton btnHistorico      = criarBotaoClinico("Histórico Clínico");
+        JButton btnReceita        = criarBotaoClinico("Emitir Receita");
+        JButton btnChamarPaciente = criarBotaoClinico("Chamar Paciente");
+        btnChamarPaciente.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnChamarPaciente.setBorder(new LineBorder(corGold.darker(), 1, true));
+        btnChamarPaciente.setFocusPainted(false);
+        btnChamarPaciente.setOpaque(true);
+        btnChamarPaciente.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         acoes.add(btnProntuario);
         acoes.add(btnHistorico);
         acoes.add(btnReceita);
+        acoes.add(btnChamarPaciente);
         corpo.add(acoes, BorderLayout.EAST);
 
         principal.add(corpo, BorderLayout.CENTER);
@@ -224,36 +228,16 @@ public class TelaMedico extends JFrame {
         // ================================================================
         carregarFila();
 
-        // Filtro por status — aplica sobre a lista já carregada
-        cbFiltro.addActionListener(e -> {
-            String filtro = cbFiltro.getSelectedItem().toString();
-            aplicarFiltro(filtro);
-        });
+        btnAtualizar.addActionListener(e -> carregarFila());
 
-        btnAtualizar.addActionListener(e -> {
-            cbFiltro.setSelectedIndex(0); // reseta filtro ao atualizar
-            carregarFila();
-        });
-
-        btnAlterarStatus.addActionListener(e -> {
-            int linha = tabela.getSelectedRow();
-            if (linha == -1) {
-                JOptionPane.showMessageDialog(this,
-                    "Selecione uma consulta na tabela para alterar o status.",
-                    "Aviso", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            int idConsulta    = (int) modeloTabela.getValueAt(linha, 0);
-            String novoStatus = cbStatus.getSelectedItem().toString();
-
-            if (consultaDAO.atualizarStatus(idConsulta, novoStatus)) {
-                JOptionPane.showMessageDialog(this,
-                    "Status atualizado para '" + novoStatus + "' com sucesso!",
-                    "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                carregarFila();
-            } else {
-                JOptionPane.showMessageDialog(this,
-                    "Erro ao atualizar status.", "Erro", JOptionPane.ERROR_MESSAGE);
+        btnFiltrar.addActionListener(e -> {
+            String filtro = cbStatus.getSelectedItem().toString();
+            modeloTabela.setRowCount(0);
+            if (listaCompleta == null) return;
+            for (Consulta c : listaCompleta) {
+                if (FILTRO_TODOS.equals(filtro) || filtro.equals(c.getStatus())) {
+                    adicionarLinhaTabela(c);
+                }
             }
         });
 
@@ -266,16 +250,23 @@ public class TelaMedico extends JFrame {
             Map<String, Integer> mapa = new LinkedHashMap<>();
             for (int i = 0; i < modeloTabela.getRowCount(); i++) {
                 String nome = modeloTabela.getValueAt(i, 2).toString();
-                int idPac   = (int) modeloTabela.getValueAt(i, 5); // coluna oculta idPaciente
+                int idPac   = (int) modeloTabela.getValueAt(i, 5);
                 mapa.put(nome, idPac);
             }
             new TelaSelecionarPaciente(nomeDoMedicoLogado, mapa).setVisible(true);
         });
 
         btnHistorico.addActionListener(e -> {
-            String paciente = obterPacienteSelecionado();
-            if (paciente == null) return;
-            new TelaHistoricoClinico(paciente).setVisible(true);
+            int linha = tabela.getSelectedRow();
+            if (linha == -1) {
+                JOptionPane.showMessageDialog(this,
+                    "Selecione um paciente na tabela.",
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            String nomePaciente = modeloTabela.getValueAt(linha, 2).toString();
+            int idPac           = (int) modeloTabela.getValueAt(linha, 5);
+            new TelaHistoricoClinico(nomePaciente, idPac).setVisible(true);
         });
 
         btnReceita.addActionListener(e -> {
@@ -283,10 +274,53 @@ public class TelaMedico extends JFrame {
             if (paciente == null) return;
             new TelaEmitirReceita(paciente, nomeDoMedicoLogado).setVisible(true);
         });
+
+        btnChamarPaciente.addActionListener(e -> {
+            int linha = tabela.getSelectedRow();
+            if (linha == -1) {
+                JOptionPane.showMessageDialog(this,
+                    "Selecione um paciente na fila para chamar.",
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int idConsulta = (int) modeloTabela.getValueAt(linha, 0);
+            int idPaciente = (int) modeloTabela.getValueAt(linha, 5);
+            String nome    = modeloTabela.getValueAt(linha, 2).toString();
+            String status  = modeloTabela.getValueAt(linha, 3).toString();
+
+            // O medico so pode chamar quem ainda nao teve o atendimento iniciado.
+            if (!status.equals("Agendado")) {
+                JOptionPane.showMessageDialog(this,
+                    "Só é possível chamar pacientes com status 'Agendado'.\n"
+                    + "Este paciente está com status '" + status + "'.",
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int confirmacao = JOptionPane.showConfirmDialog(this,
+                "Chamar o paciente " + nome + " para a consulta?",
+                "Confirmar Chamada", JOptionPane.YES_NO_OPTION);
+
+            if (confirmacao != JOptionPane.YES_OPTION) return;
+
+            // Registra a chamada e sinaliza a secretaria via status "Aguardando Chamada".
+            // A partir daqui, apenas a secretaria altera o andamento da consulta.
+            if (chamadaDAO.chamarPaciente(idConsulta, idPaciente)) {
+                consultaDAO.atualizarStatus(idConsulta, "Aguardando Chamada");
+                JOptionPane.showMessageDialog(this,
+                    "Paciente " + nome + " chamado com sucesso!\nA secretária será notificada.",
+                    "Chamada Registrada", JOptionPane.INFORMATION_MESSAGE);
+                carregarFila();
+            } else {
+                JOptionPane.showMessageDialog(this,
+                    "Erro ao registrar chamada.", "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+        });
     }
 
     // ================================================================
-    // CARREGAR FILA DO BANCO
+    // MÉTODOS AUXILIARES
     // ================================================================
     private void carregarFila() {
         modeloTabela.setRowCount(0);
@@ -298,22 +332,7 @@ public class TelaMedico extends JFrame {
                 "Fila Vazia", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-
         popularTabela(listaCompleta);
-    }
-
-    // ================================================================
-    // FILTRO LOCAL POR STATUS
-    // ================================================================
-    private void aplicarFiltro(String filtro) {
-        modeloTabela.setRowCount(0);
-        if (listaCompleta == null) return;
-
-        for (Consulta c : listaCompleta) {
-            if (filtro.equals("Todos") || filtro.equals(c.getStatus())) {
-                adicionarLinhaTabela(c);
-            }
-        }
     }
 
     private void popularTabela(List<Consulta> lista) {
@@ -332,7 +351,7 @@ public class TelaMedico extends JFrame {
             c.getNomePaciente(),
             c.getStatus(),
             c.getNomeConvenio() != null ? c.getNomeConvenio() : "Particular",
-            c.getIdPaciente()   // coluna oculta — índice 5
+            c.getIdPaciente()
         });
     }
 

@@ -1,9 +1,12 @@
 package com.mycompany.clinicamedica.newpackage.view.Secretaria;
 
 import Services.BDSConnection;
+import Services.ConsultaDAO;
+import Services.StatusDAO;
 import com.mycompany.clinicamedica.newpackage.view.TelaLogin;
 import java.awt.*;
 import java.sql.*;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
@@ -11,7 +14,11 @@ import javax.swing.table.*;
 public class TelaSecretaria extends JFrame {
 
     private DefaultTableModel modeloTabela;
+    private JTable tabela;
     private JLabel lblContadores;
+
+    private final ConsultaDAO consultaDAO = new ConsultaDAO();
+    private final StatusDAO   statusDAO   = new StatusDAO();
 
     private static final Color MARROM = new Color(61, 28, 6);
     private static final Color GOLD   = new Color(193, 158, 103);
@@ -109,6 +116,19 @@ public class TelaSecretaria extends JFrame {
         lblTitulo.setForeground(MARROM);
         topBar.add(lblTitulo, BorderLayout.WEST);
 
+        JPanel botoesTopo = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        botoesTopo.setBackground(FUNDO);
+
+        JButton btnAlterarStatus = new JButton("Alterar Status");
+        btnAlterarStatus.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnAlterarStatus.setBackground(GOLD);
+        btnAlterarStatus.setForeground(MARROM);
+        btnAlterarStatus.setFocusPainted(false);
+        btnAlterarStatus.setOpaque(true);
+        btnAlterarStatus.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnAlterarStatus.setBorder(new LineBorder(GOLD.darker(), 1, true));
+        btnAlterarStatus.addActionListener(e -> alterarStatusSelecionado());
+
         JButton btnAtualizar = new JButton("↻  Atualizar");
         btnAtualizar.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnAtualizar.setBackground(MARROM);
@@ -117,17 +137,20 @@ public class TelaSecretaria extends JFrame {
         btnAtualizar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnAtualizar.setBorder(new LineBorder(GOLD, 1, true));
         btnAtualizar.addActionListener(e -> carregarConsultas());
-        topBar.add(btnAtualizar, BorderLayout.EAST);
+
+        botoesTopo.add(btnAlterarStatus);
+        botoesTopo.add(btnAtualizar);
+        topBar.add(botoesTopo, BorderLayout.EAST);
 
         painel.add(topBar, BorderLayout.NORTH);
 
-        // Tabela
-        String[] colunas = {"Paciente", "Médico / Especialidade", "Horário", "Status"};
+        // Tabela — a coluna idConsulta fica oculta (o usuario nunca ve ids).
+        String[] colunas = {"Paciente", "Médico / Especialidade", "Horário", "Status", "idConsulta"};
         modeloTabela = new DefaultTableModel(colunas, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
 
-        JTable tabela = new JTable(modeloTabela);
+        tabela = new JTable(modeloTabela);
         tabela.setRowHeight(30);
         tabela.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tabela.setGridColor(new Color(220, 215, 205));
@@ -138,7 +161,12 @@ public class TelaSecretaria extends JFrame {
         tabela.getTableHeader().setForeground(Color.WHITE);
         tabela.getTableHeader().setReorderingAllowed(false);
         tabela.getColumnModel().getColumn(2).setMaxWidth(90);
-        tabela.getColumnModel().getColumn(3).setMaxWidth(130);
+        tabela.getColumnModel().getColumn(3).setMaxWidth(150);
+        // Oculta a coluna idConsulta (usada apenas internamente).
+        TableColumn colId = tabela.getColumnModel().getColumn(4);
+        colId.setMinWidth(0);
+        colId.setMaxWidth(0);
+        colId.setWidth(0);
 
         // Renderer colorido por status
         DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
@@ -149,13 +177,12 @@ public class TelaSecretaria extends JFrame {
                 if (!sel) {
                     String status = String.valueOf(t.getValueAt(row, 3));
                     switch (status) {
-                        case "Em Atendimento" -> { c.setBackground(new Color(210, 230, 250)); c.setForeground(new Color(20, 60, 120)); }
-                        case "Presente"       -> { c.setBackground(new Color(210, 240, 215)); c.setForeground(new Color(20, 100, 40)); }
-                        case "Agendado"       -> { c.setBackground(new Color(252, 248, 235)); c.setForeground(MARROM); }
-                        case "Confirmado"     -> { c.setBackground(new Color(235, 248, 252)); c.setForeground(new Color(10, 80, 110)); }
-                        case "Aguardando"     -> { c.setBackground(new Color(255, 250, 220)); c.setForeground(new Color(120, 90, 0)); }
-                        case "Concluído","Finalizado" -> { c.setBackground(new Color(235, 235, 235)); c.setForeground(Color.GRAY); }
-                        default               -> { c.setBackground(Color.WHITE); c.setForeground(Color.DARK_GRAY); }
+                        case "Em Atendimento"      -> { c.setBackground(new Color(210, 230, 250)); c.setForeground(new Color(20, 60, 120)); }
+                        case "Agendado"            -> { c.setBackground(new Color(252, 248, 235)); c.setForeground(MARROM); }
+                        case "Aguardando Chamada"  -> { c.setBackground(new Color(255, 250, 220)); c.setForeground(new Color(120, 90, 0)); }
+                        case "Consulta Finalizada" -> { c.setBackground(new Color(235, 235, 235)); c.setForeground(Color.GRAY); }
+                        case "Cancelado"           -> { c.setBackground(new Color(250, 225, 225)); c.setForeground(new Color(140, 40, 40)); }
+                        default                    -> { c.setBackground(Color.WHITE); c.setForeground(Color.DARK_GRAY); }
                     }
                 }
                 return c;
@@ -182,38 +209,40 @@ public class TelaSecretaria extends JFrame {
     private void carregarConsultas() {
         modeloTabela.setRowCount(0);
 
-        String sql = "SELECT p.nome AS paciente, "
+        String sql = "SELECT c.idConsulta, p.nome AS paciente, "
                    + "u.nome AS medico, e.nome AS especialidade, "
-                   + "TIME(c.dataHora) AS horario, c.status "
+                   + "TIME(c.dataHora) AS horario, s.nome AS status "
                    + "FROM consulta c "
                    + "JOIN paciente p ON p.idPaciente = c.idPaciente "
                    + "JOIN usuario u ON u.idUsuario = c.idUsuario "
+                   + "JOIN status s ON s.idStatus = c.idStatus "
                    + "LEFT JOIN medico m ON m.idUsuario = u.idUsuario "
                    + "LEFT JOIN especialidade e ON e.idEspecialidade = m.idEspecialidade "
                    + "WHERE DATE(c.dataHora) = CURDATE() "
-                   + "AND c.status != 'Cancelado' "
+                   + "AND s.nome != 'Cancelado' "
                    + "ORDER BY c.dataHora";
 
-        int total = 0, presentes = 0, agendados = 0, emAtendimento = 0;
+        int total = 0, aguardando = 0, agendados = 0, emAtendimento = 0;
 
         try (Connection conn = BDSConnection.getConexao();
              PreparedStatement st = conn.prepareStatement(sql);
              ResultSet rs = st.executeQuery()) {
 
             while (rs.next()) {
+                int idConsulta = rs.getInt("idConsulta");
                 String esp    = rs.getString("especialidade");
                 String medico = rs.getString("medico") + (esp != null ? " (" + esp + ")" : "");
                 String hora   = rs.getString("horario");
                 if (hora != null && hora.length() > 5) hora = hora.substring(0, 5);
                 String status = rs.getString("status");
 
-                modeloTabela.addRow(new Object[]{rs.getString("paciente"), medico, hora, status});
+                modeloTabela.addRow(new Object[]{rs.getString("paciente"), medico, hora, status, idConsulta});
 
                 total++;
                 switch (status) {
-                    case "Presente","Aguardando" -> presentes++;
-                    case "Agendado","Confirmado" -> agendados++;
-                    case "Em Atendimento"        -> emAtendimento++;
+                    case "Aguardando Chamada" -> aguardando++;
+                    case "Agendado"           -> agendados++;
+                    case "Em Atendimento"     -> emAtendimento++;
                 }
             }
 
@@ -221,12 +250,53 @@ public class TelaSecretaria extends JFrame {
                 lblContadores.setText("Nenhuma consulta registrada para hoje.");
             } else {
                 lblContadores.setText(String.format(
-                    "Total hoje: %d  |  Agendados: %d  |  Presentes: %d  |  Em Atendimento: %d",
-                    total, agendados, presentes, emAtendimento));
+                    "Total hoje: %d  |  Agendados: %d  |  Aguardando chamada: %d  |  Em Atendimento: %d",
+                    total, agendados, aguardando, emAtendimento));
             }
 
         } catch (SQLException e) {
             lblContadores.setText("Erro ao carregar: " + e.getMessage());
+        }
+    }
+
+    // ── ALTERAR STATUS (somente a secretária avança o andamento) ────────────────
+
+    private void alterarStatusSelecionado() {
+        int linha = tabela.getSelectedRow();
+        if (linha == -1) {
+            JOptionPane.showMessageDialog(this,
+                "Selecione uma consulta na tabela para alterar o status.",
+                "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int idConsulta      = (int) modeloTabela.getValueAt(linha, 4);
+        String paciente     = String.valueOf(modeloTabela.getValueAt(linha, 0));
+        String statusAtual  = String.valueOf(modeloTabela.getValueAt(linha, 3));
+
+        List<String> nomes = statusDAO.listarNomes();
+        if (nomes.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                "Não foi possível carregar a lista de status.",
+                "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String novoStatus = (String) JOptionPane.showInputDialog(this,
+            "Paciente: " + paciente + "\nStatus atual: " + statusAtual + "\n\nSelecione o novo status:",
+            "Alterar Status da Consulta", JOptionPane.QUESTION_MESSAGE, null,
+            nomes.toArray(new String[0]), statusAtual);
+
+        if (novoStatus == null || novoStatus.equals(statusAtual)) return;
+
+        if (consultaDAO.atualizarStatus(idConsulta, novoStatus)) {
+            JOptionPane.showMessageDialog(this,
+                "Status atualizado para '" + novoStatus + "'.",
+                "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            carregarConsultas();
+        } else {
+            JOptionPane.showMessageDialog(this,
+                "Erro ao atualizar status.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 

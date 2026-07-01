@@ -166,7 +166,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
         legenda.setBackground(MEDIO);
         legenda.add(chip(C_LIVRE,    "Livre"));
         legenda.add(chip(C_OCUPADO,  "Ocupado"));
-        legenda.add(chip(C_PRESENTE, "Presente"));
+        legenda.add(chip(C_PRESENTE, "Aguardando Chamada"));
         p.add(legenda, BorderLayout.NORTH);
 
         // Tabela
@@ -196,9 +196,9 @@ public class TelaConsultarEscalaMedica extends JFrame {
                 if (!sel) {
                     String sit = String.valueOf(t.getValueAt(row, 1));
                     String sts = String.valueOf(t.getValueAt(row, 4));
-                    if ("Livre".equals(sit))          c.setBackground(C_LIVRE);
-                    else if ("Presente".equals(sts))  c.setBackground(C_PRESENTE);
-                    else                              c.setBackground(C_OCUPADO);
+                    if ("Livre".equals(sit))                     c.setBackground(C_LIVRE);
+                    else if ("Aguardando Chamada".equals(sts))   c.setBackground(C_PRESENTE);
+                    else                                         c.setBackground(C_OCUPADO);
                     c.setForeground(MARROM);
                 }
                 return c;
@@ -321,10 +321,10 @@ public class TelaConsultarEscalaMedica extends JFrame {
         String sit = (String) modelo.getValueAt(row, 1);
         String sts = (String) modelo.getValueAt(row, 4);
         boolean livre     = "Livre".equals(sit);
-        boolean concluido = "Concluído".equals(sts);
+        boolean concluido = "Consulta Finalizada".equals(sts);
 
         btnAgendar.setEnabled(livre);
-        btnCheckin.setEnabled(!livre && ("Agendado".equals(sts) || "Confirmado".equals(sts)));
+        btnCheckin.setEnabled(!livre && "Agendado".equals(sts));
         btnEditar.setEnabled(!livre && !concluido);
         btnCancelar.setEnabled(!livre && !concluido);
     }
@@ -345,11 +345,12 @@ public class TelaConsultarEscalaMedica extends JFrame {
 
         Map<String, Object[]> agendados = new LinkedHashMap<>();
         String sql = "SELECT c.idConsulta, TIME(c.dataHora) AS hora, "
-                   + "p.nome AS paciente, cv.nome AS convenio, c.status "
+                   + "p.nome AS paciente, cv.nome AS convenio, s.nome AS status "
                    + "FROM consulta c "
                    + "JOIN paciente p ON p.idPaciente = c.idPaciente "
+                   + "JOIN status s ON s.idStatus = c.idStatus "
                    + "LEFT JOIN convenio cv ON cv.idConvenio = c.idConvenio "
-                   + "WHERE c.idUsuario = ? AND DATE(c.dataHora) = ? AND c.status != 'Cancelado'";
+                   + "WHERE c.idUsuario = ? AND DATE(c.dataHora) = ? AND s.nome != 'Cancelado'";
         try (Connection conn = BDSConnection.getConexao();
              PreparedStatement st = conn.prepareStatement(sql)) {
             st.setInt(1, idMedico);
@@ -404,8 +405,8 @@ public class TelaConsultarEscalaMedica extends JFrame {
             "Confirmar chegada de: " + paciente + "?", "Check-in", JOptionPane.YES_NO_OPTION);
         if (ok != JOptionPane.YES_OPTION) return;
 
-        if (new ConsultaDAO().atualizarStatus(idC, "Presente")) {
-            JOptionPane.showMessageDialog(this, paciente + " registrado como Presente.",
+        if (new ConsultaDAO().atualizarStatus(idC, "Aguardando Chamada")) {
+            JOptionPane.showMessageDialog(this, paciente + " registrado como presente (Aguardando Chamada).",
                 "Check-in realizado", JOptionPane.INFORMATION_MESSAGE);
             gerarEscala();
         } else {
