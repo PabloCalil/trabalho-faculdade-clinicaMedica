@@ -249,11 +249,14 @@ public class TelaMedico extends JFrame {
                     "Nenhum paciente na fila.", "Aviso", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            Map<String, Integer> mapa = new LinkedHashMap<>();
+            // Cada paciente carrega [idPaciente, idConsulta] para permitir
+            // finalizar a consulta ao concluir o atendimento no prontuário.
+            Map<String, int[]> mapa = new LinkedHashMap<>();
             for (int i = 0; i < modeloTabela.getRowCount(); i++) {
-                String nome = modeloTabela.getValueAt(i, 2).toString();
-                int idPac   = (int) modeloTabela.getValueAt(i, 5);
-                mapa.put(nome, idPac);
+                String nome     = modeloTabela.getValueAt(i, 2).toString();
+                int idPac       = (int) modeloTabela.getValueAt(i, 5);
+                int idConsulta  = (int) modeloTabela.getValueAt(i, 0);
+                mapa.put(nome, new int[]{idPac, idConsulta});
             }
             new TelaSelecionarPaciente(nomeDoMedicoLogado, mapa).setVisible(true);
         });
@@ -272,9 +275,16 @@ public class TelaMedico extends JFrame {
         });
 
         btnReceita.addActionListener(e -> {
-            String paciente = obterPacienteSelecionado();
-            if (paciente == null) return;
-            new TelaEmitirReceita(paciente, nomeDoMedicoLogado).setVisible(true);
+            int linha = tabela.getSelectedRow();
+            if (linha == -1) {
+                JOptionPane.showMessageDialog(this,
+                    "Selecione um paciente na tabela.",
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            int idConsulta  = (int) modeloTabela.getValueAt(linha, 0);
+            String paciente = modeloTabela.getValueAt(linha, 2).toString();
+            new TelaEmitirReceita(paciente, nomeDoMedicoLogado, idConsulta).setVisible(true);
         });
 
         btnChamarPaciente.addActionListener(e -> {
@@ -355,17 +365,6 @@ public class TelaMedico extends JFrame {
             c.getNomeConvenio() != null ? c.getNomeConvenio() : "Particular",
             c.getIdPaciente()
         });
-    }
-
-    private String obterPacienteSelecionado() {
-        int linha = tabela.getSelectedRow();
-        if (linha == -1) {
-            JOptionPane.showMessageDialog(this,
-                "Selecione um paciente na tabela.",
-                "Aviso", JOptionPane.WARNING_MESSAGE);
-            return null;
-        }
-        return modeloTabela.getValueAt(linha, 2).toString();
     }
 
     private JButton criarBotaoClinico(String texto) {

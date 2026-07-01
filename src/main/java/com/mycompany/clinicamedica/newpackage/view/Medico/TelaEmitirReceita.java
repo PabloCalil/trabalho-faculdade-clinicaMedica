@@ -1,12 +1,16 @@
 package com.mycompany.clinicamedica.newpackage.view.Medico;
 
+import Services.ReceituarioDAO;
 import com.mycompany.clinicamedica.newpackage.view.ui.Tema;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 
 public class TelaEmitirReceita extends JFrame {
-    public TelaEmitirReceita(String nomePaciente, String nomeMedico) {
+
+    private final ReceituarioDAO receituarioDAO = new ReceituarioDAO();
+
+    public TelaEmitirReceita(String nomePaciente, String nomeMedico, int idConsulta) {
         setTitle("Health Equilibrium - Emissor de Documentos Digitais");
         setSize(550, 550);
         setLocationRelativeTo(null);
@@ -64,18 +68,41 @@ public class TelaEmitirReceita extends JFrame {
         p.add(scrollTexto);
 
         // Botão Emitir
-        JButton btnImprimir = new JButton("EMITIR E IMPRIMIR DOCUMENTO VIA RECONHECIMENTO");
+        // Botão Emitir
+        JButton btnImprimir = new JButton("EMITIR DOCUMENTO");
         btnImprimir.setBounds(30, 455, 490, 45);
         btnImprimir.setBackground(marromEscuro);
         btnImprimir.setForeground(Color.WHITE);
-        btnImprimir.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnImprimir.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnImprimir.setFocusPainted(false);
+        btnImprimir.setOpaque(true);
+        btnImprimir.setCursor(new Cursor(Cursor.HAND_CURSOR));
         p.add(btnImprimir);
 
         btnImprimir.addActionListener(e -> {
-            String doc = cbTipo.getSelectedItem().toString();
-            JOptionPane.showMessageDialog(this, doc + " gerada com sucesso para o paciente " + nomePaciente + "!\nEmitido por: Dr(a). " + nomeMedico, "Documento Emitido", JOptionPane.INFORMATION_MESSAGE);
-            this.dispose();
+            String doc   = cbTipo.getSelectedItem().toString();
+            String corpo = txtTexto.getText().trim();
+
+            if (corpo.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                    "Preencha a prescrição / justificativa antes de emitir.",
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Grava no receituário, identificando o tipo do documento no texto.
+            String medicamentos = "(" + doc + ") " + corpo;
+            if (receituarioDAO.inserir(idConsulta, medicamentos)) {
+                JOptionPane.showMessageDialog(this,
+                    doc + " emitida e registrada com sucesso para o paciente " + nomePaciente + "!"
+                    + "\nEmitido por: Dr(a). " + nomeMedico,
+                    "Documento Emitido", JOptionPane.INFORMATION_MESSAGE);
+                this.dispose();
+            } else {
+                JOptionPane.showMessageDialog(this,
+                    "Erro ao registrar a receita no sistema.",
+                    "Erro", JOptionPane.ERROR_MESSAGE);
+            }
         });
     }
 }

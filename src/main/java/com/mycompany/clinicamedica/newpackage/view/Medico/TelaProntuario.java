@@ -1,5 +1,6 @@
 package com.mycompany.clinicamedica.newpackage.view.Medico;
 
+import Services.ConsultaDAO;
 import Services.Prontuario;
 import Services.ProntuarioDAO;
 import com.mycompany.clinicamedica.newpackage.view.ui.Tema;
@@ -11,14 +12,17 @@ import javax.swing.border.TitledBorder;
 public class TelaProntuario extends JFrame {
 
     private final ProntuarioDAO dao = new ProntuarioDAO();
+    private final ConsultaDAO consultaDAO = new ConsultaDAO();
     private final int idPaciente;
+    private final int idConsulta;
     private int idProntuarioExistente = -1;
 
     private JTextArea txtHda, txtHpp, txtExameFisico, txtConduta;
     private JTextField tPA, tFC, tTemp, tCid;
 
-    public TelaProntuario(String nomePaciente, String nomeMedico, int idPaciente) {
+    public TelaProntuario(String nomePaciente, String nomeMedico, int idPaciente, int idConsulta) {
         this.idPaciente = idPaciente;
+        this.idConsulta = idConsulta;
 
         setTitle("Health Equilibrium - Prontuário Eletrônico e Anamnese");
         setSize(800, 700);
@@ -218,8 +222,10 @@ public class TelaProntuario extends JFrame {
         }
 
         if (sucesso) {
+            // Concluir o atendimento finaliza a consulta correspondente.
+            consultaDAO.atualizarStatus(idConsulta, "Consulta Finalizada");
             JOptionPane.showMessageDialog(this,
-                "Prontuário salvo com sucesso!",
+                "Prontuário salvo e atendimento concluído!\nConsulta marcada como 'Consulta Finalizada'.",
                 "Sucesso", JOptionPane.INFORMATION_MESSAGE);
             this.dispose();
         } else {

@@ -10,9 +10,9 @@ public class TelaSelecionarPaciente extends JFrame {
 
     private JComboBox<String> cbPacientes;
     private String nomeMedicoLogado;
-    private Map<String, Integer> mapaPacientes; // nome → idPaciente
+    private Map<String, int[]> mapaPacientes; // nome → [idPaciente, idConsulta]
 
-    public TelaSelecionarPaciente(String nomeMedico, Map<String, Integer> pacientes) {
+    public TelaSelecionarPaciente(String nomeMedico, Map<String, int[]> pacientes) {
         this.nomeMedicoLogado = nomeMedico;
         this.mapaPacientes    = pacientes;
 
@@ -72,10 +72,12 @@ public class TelaSelecionarPaciente extends JFrame {
                 return;
             }
             String nomePaciente = cbPacientes.getSelectedItem().toString();
-            int idPaciente      = mapaPacientes.get(nomePaciente);
+            int[] ids           = mapaPacientes.get(nomePaciente);
+            int idPaciente      = ids[0];
+            int idConsulta      = ids[1];
 
             this.dispose();
-            new TelaProntuario(nomePaciente, nomeMedicoLogado, idPaciente).setVisible(true);
+            new TelaProntuario(nomePaciente, nomeMedicoLogado, idPaciente, idConsulta).setVisible(true);
         });
     }
 }
