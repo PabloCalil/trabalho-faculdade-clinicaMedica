@@ -2,7 +2,7 @@ package Telas_old; // <-- Ajustado estritamente para a sua árvore de ficheiros!
 
 import Telas_old.TelaConsultarPaciente;
 import Telas_old.TelaConsultarConsultas;
-import Telas_old.TelaAgendarConsulta;
+import com.mycompany.clinicamedica.newpackage.view.Secretaria.TelaAgendarConsulta;
 import Telas_old.TelaCadastrarPaciente;
 import java.awt.*;
 import javax.swing.*;

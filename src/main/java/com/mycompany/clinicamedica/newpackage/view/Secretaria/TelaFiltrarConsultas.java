@@ -1,4 +1,4 @@
-package com.mycompany.clinicamedica.newpackage.view; // <-- Ajustado estritamente para o seu pacote real!
+package com.mycompany.clinicamedica.newpackage.view.Secretaria; // <-- Ajustado estritamente para o seu pacote real!
 
 import java.awt.*;
 import javax.swing.*;
@@ -6,7 +6,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
-public class TelaConsultarConsultas extends JFrame {
+public class TelaFiltrarConsultas extends JFrame {
 
     private JTextField txtDataFiltro;
     private JComboBox<String> cbMedicoFiltro;
@@ -14,7 +14,7 @@ public class TelaConsultarConsultas extends JFrame {
     private JTable tabelaAgenda;
     private DefaultTableModel modeloTabela;
 
-    public TelaConsultarConsultas() {
+    public TelaFiltrarConsultas() {
         setTitle("🏥 Sistema Clínica Médica - Fluxo da Agenda Diária");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(1000, 680);
@@ -183,7 +183,7 @@ public class TelaConsultarConsultas extends JFrame {
         } catch (Exception e) {}
 
         SwingUtilities.invokeLater(() -> {
-            new TelaConsultarConsultas().setVisible(true);
+            new TelaFiltrarConsultas().setVisible(true);
         });
     }
 }
