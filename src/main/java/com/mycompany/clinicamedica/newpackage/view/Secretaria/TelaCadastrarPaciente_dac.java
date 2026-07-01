@@ -3,6 +3,7 @@ package com.mycompany.clinicamedica.newpackage.view.Secretaria;
 import Services.BDSConnection;
 import Services.Paciente;
 import Services.PacienteDAO;
+import com.mycompany.clinicamedica.newpackage.view.ui.Tema;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -26,11 +27,13 @@ public class TelaCadastrarPaciente_dac extends JFrame {
     private JComboBox<String> cbSexo, cbConvenio;
     private JButton btnSalvar, btnLimpar, btnVoltar;
 
-    private final Color corCremeClaro   = new Color(251, 251, 250);
-    private final Color corDestaqueGold = new Color(193, 158, 103);
-    private final Color corTomMedio     = new Color(110, 102, 95);
-    private final Color corRotuloCinza  = new Color(180, 169, 158);
-    private final Color corMarromEscuro = new Color(61, 28, 6);
+    private final Color corFundo        = Tema.FUNDO_CLARO;   // fundo creme (igual TelaMedico)
+    private final Color corCard         = Color.WHITE;         // cartão do formulário
+    private final Color corDestaqueGold = Tema.GOLD;
+    private final Color corTomMedio     = Tema.TOM_MEDIO;
+    private final Color corTexto        = Tema.TEXTO_ESCURO;
+    private final Color corRotuloCinza  = new Color(90, 80, 70); // rótulos escuros p/ fundo claro
+    private final Color corMarromEscuro = Tema.MARROM_ESCURO;
 
     public TelaCadastrarPaciente_dac() {
         setTitle("Health Equilibrium - Novo Cadastro");
@@ -40,18 +43,18 @@ public class TelaCadastrarPaciente_dac extends JFrame {
         setResizable(false);
 
         JPanel painelFundo = new JPanel();
-        painelFundo.setBackground(corTomMedio);
+        painelFundo.setBackground(corFundo);
         painelFundo.setLayout(null);
         setContentPane(painelFundo);
 
         JLabel lblTitulo = new JLabel("Cadastro de Novo Paciente");
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 32));
-        lblTitulo.setForeground(corCremeClaro);
+        lblTitulo.setForeground(corMarromEscuro);
         lblTitulo.setBounds(50, 30, 500, 40);
         painelFundo.add(lblTitulo);
 
         JPanel painelForm = new JPanel();
-        painelForm.setBackground(corMarromEscuro);
+        painelForm.setBackground(corCard);
         painelForm.setLayout(null);
         painelForm.setBounds(50, 100, 780, 550);
         painelForm.setBorder(new LineBorder(corDestaqueGold, 1, true));
@@ -79,7 +82,7 @@ public class TelaCadastrarPaciente_dac extends JFrame {
 
         txtCPF = criarCampoTexto();
         txtCPF.setBounds(40, 123, 330, 35);
-        aplicarFiltroDigitos(txtCPF, 11);
+        aplicarMascara(txtCPF, 11, s -> fmtCpf(s));
         painelForm.add(txtCPF);
 
         JLabel lblContCPF = criarContador("0/11 dígitos");
@@ -95,7 +98,7 @@ public class TelaCadastrarPaciente_dac extends JFrame {
 
         txtTelefone = criarCampoTexto();
         txtTelefone.setBounds(410, 123, 330, 35);
-        aplicarFiltroDigitos(txtTelefone, 11);
+        aplicarMascara(txtTelefone, 11, s -> fmtTelefone(s));
         painelForm.add(txtTelefone);
 
         JLabel lblContTel = criarContador("0/11 dígitos");
@@ -112,10 +115,10 @@ public class TelaCadastrarPaciente_dac extends JFrame {
 
         txtNascimento = criarCampoTexto();
         txtNascimento.setBounds(40, 198, 330, 35);
-        aplicarFiltroDigitos(txtNascimento, 8);
+        aplicarMascara(txtNascimento, 8, s -> fmtData(s));
         painelForm.add(txtNascimento);
 
-        JLabel lblContNasc = criarContador("0/8 dígitos  (DDMMAAAA)");
+        JLabel lblContNasc = criarContador("0/8 dígitos  (dd/mm/aaaa)");
         lblContNasc.setBounds(40, 235, 260, 16);
         painelForm.add(lblContNasc);
         vincularContador(txtNascimento, lblContNasc, 8);
@@ -185,14 +188,14 @@ public class TelaCadastrarPaciente_dac extends JFrame {
         painelForm.add(btnSalvar);
 
         btnLimpar = new JButton("Limpar");
-        btnLimpar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        btnLimpar.setBackground(corTomMedio);
-        btnLimpar.setForeground(corCremeClaro);
+        btnLimpar.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnLimpar.setBackground(corCard);
+        btnLimpar.setForeground(corTexto);
         btnLimpar.setBounds(400, 460, 160, 45);
         btnLimpar.setFocusPainted(false);
         btnLimpar.setOpaque(true);
         btnLimpar.setBorderPainted(true);
-        btnLimpar.setBorder(new LineBorder(corRotuloCinza, 1));
+        btnLimpar.setBorder(new LineBorder(corDestaqueGold, 1, true));
         btnLimpar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         painelForm.add(btnLimpar);
 
@@ -230,8 +233,8 @@ public class TelaCadastrarPaciente_dac extends JFrame {
     // RENDERER CUSTOMIZADO PARA COMBOBOX
     // ====================================================================
     private void estilizarCombo(JComboBox<String> combo) {
-        combo.setBackground(corTomMedio);
-        combo.setForeground(corCremeClaro);
+        combo.setBackground(corCard);
+        combo.setForeground(corTexto);
         combo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         combo.setBorder(new LineBorder(corDestaqueGold, 1));
         combo.setOpaque(true);
@@ -250,8 +253,8 @@ public class TelaCadastrarPaciente_dac extends JFrame {
                     label.setBackground(corDestaqueGold);
                     label.setForeground(corMarromEscuro);
                 } else {
-                    label.setBackground(corTomMedio);
-                    label.setForeground(corCremeClaro);
+                    label.setBackground(corCard);
+                    label.setForeground(corTexto);
                 }
                 return label;
             }
@@ -280,7 +283,8 @@ public class TelaCadastrarPaciente_dac extends JFrame {
             return;
         }
 
-        String cpf = txtCPF.getText().trim();
+        // Os campos exibem máscara; validamos/gravamos apenas os dígitos.
+        String cpf = txtCPF.getText().replaceAll("\\D", "");
         if (cpf.length() != 11) {
             JOptionPane.showMessageDialog(this,
                 "CPF deve ter exatamente 11 dígitos. Você inseriu " + cpf.length() + ".",
@@ -289,7 +293,7 @@ public class TelaCadastrarPaciente_dac extends JFrame {
             return;
         }
 
-        String telefone = txtTelefone.getText().trim();
+        String telefone = txtTelefone.getText().replaceAll("\\D", "");
         if (telefone.length() < 10 || telefone.length() > 11) {
             JOptionPane.showMessageDialog(this,
                 "Telefone deve ter 10 ou 11 dígitos (com DDD). Você inseriu " + telefone.length() + ".",
@@ -298,7 +302,7 @@ public class TelaCadastrarPaciente_dac extends JFrame {
             return;
         }
 
-        String nascRaw = txtNascimento.getText().trim();
+        String nascRaw = txtNascimento.getText().replaceAll("\\D", "");
         if (nascRaw.length() != 8) {
             JOptionPane.showMessageDialog(this,
                 "Data de nascimento deve ter 8 dígitos (DDMMAAAA). Você inseriu " + nascRaw.length() + ".",
@@ -326,8 +330,8 @@ public class TelaCadastrarPaciente_dac extends JFrame {
 
         Paciente paciente = new Paciente();
         paciente.setNome(txtNome.getText().trim());
-        paciente.setCpf(txtCPF.getText().trim());
-        paciente.setTelefone(txtTelefone.getText().trim());
+        paciente.setCpf(cpf);
+        paciente.setTelefone(telefone);
         paciente.setDataNascimento(nascFormatado);
         paciente.setEndereco(txtEndereco.getText().trim());
         paciente.setSexo(cbSexo.getSelectedItem().toString());
@@ -374,6 +378,74 @@ public class TelaCadastrarPaciente_dac extends JFrame {
         });
     }
 
+    /**
+     * Máscara viva: mantém apenas dígitos (até maxDigitos) e reexibe o campo
+     * já formatado a cada digitação, conforme o formatador informado.
+     */
+    private void aplicarMascara(JTextField campo, int maxDigitos,
+                                java.util.function.Function<String, String> formatador) {
+        ((AbstractDocument) campo.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int off, String text, AttributeSet a)
+                    throws BadLocationException {
+                aplicar(fb, off, 0, text, a);
+            }
+            @Override
+            public void replace(FilterBypass fb, int off, int len, String text, AttributeSet a)
+                    throws BadLocationException {
+                aplicar(fb, off, len, text, a);
+            }
+            @Override
+            public void remove(FilterBypass fb, int off, int len) throws BadLocationException {
+                aplicar(fb, off, len, "", null);
+            }
+            private void aplicar(FilterBypass fb, int off, int len, String text, AttributeSet a)
+                    throws BadLocationException {
+                String atual = fb.getDocument().getText(0, fb.getDocument().getLength());
+                String resultado = atual.substring(0, off)
+                                 + (text == null ? "" : text)
+                                 + atual.substring(off + len);
+                String digitos = resultado.replaceAll("\\D", "");
+                if (digitos.length() > maxDigitos) digitos = digitos.substring(0, maxDigitos);
+                String formatado = formatador.apply(digitos);
+                super.replace(fb, 0, fb.getDocument().getLength(), formatado, a);
+                SwingUtilities.invokeLater(() -> campo.setCaretPosition(campo.getText().length()));
+            }
+        });
+    }
+
+    // Formatadores das máscaras (recebem apenas dígitos).
+    private static String fmtCpf(String d) {         // 000.000.000-00
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < d.length(); i++) {
+            if (i == 3 || i == 6) sb.append('.');
+            else if (i == 9)      sb.append('-');
+            sb.append(d.charAt(i));
+        }
+        return sb.toString();
+    }
+
+    private static String fmtData(String d) {        // dd/mm/aaaa
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < d.length(); i++) {
+            if (i == 2 || i == 4) sb.append('/');
+            sb.append(d.charAt(i));
+        }
+        return sb.toString();
+    }
+
+    private static String fmtTelefone(String d) {    // (00) 0000-0000 ou (00) 00000-0000
+        StringBuilder sb = new StringBuilder();
+        int hifen = d.length() > 10 ? 7 : 6;
+        for (int i = 0; i < d.length(); i++) {
+            if (i == 0) sb.append('(');
+            if (i == 2) sb.append(") ");
+            if (i == hifen) sb.append('-');
+            sb.append(d.charAt(i));
+        }
+        return sb.toString();
+    }
+
     private JLabel criarContador(String textoInicial) {
         JLabel lbl = new JLabel(textoInicial);
         lbl.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -384,7 +456,7 @@ public class TelaCadastrarPaciente_dac extends JFrame {
     private void vincularContador(JTextField campo, JLabel contador, int max) {
         campo.getDocument().addDocumentListener(new DocumentListener() {
             private void atualizar() {
-                int len = campo.getText().length();
+                int len = campo.getText().replaceAll("\\D", "").length();
                 contador.setText(len + "/" + max + " dígitos");
                 contador.setForeground(len == max ? new Color(80, 160, 80) :
                                        len  > 0   ? corRotuloCinza : corRotuloCinza);
@@ -397,12 +469,12 @@ public class TelaCadastrarPaciente_dac extends JFrame {
 
     private JTextField criarCampoTexto() {
         JTextField campo = new JTextField();
-        campo.setBackground(corTomMedio);
-        campo.setForeground(corCremeClaro);
-        campo.setCaretColor(corCremeClaro);
+        campo.setBackground(corCard);
+        campo.setForeground(corTexto);
+        campo.setCaretColor(corTexto);
         campo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         campo.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(corTomMedio.brighter(), 1),
+                new LineBorder(corDestaqueGold, 1),
                 new EmptyBorder(0, 10, 0, 10)
         ));
         return campo;
