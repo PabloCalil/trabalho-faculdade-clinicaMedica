@@ -28,14 +28,15 @@ public class ConsultaDAO {
 
             stmt.setInt(1, idUsuario);
             try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Consulta c = new Consulta();
-                    c.setIdConsulta(rs.getInt("idConsulta"));
-                    c.setDataHora(rs.getString("dataHora"));
-                    c.setStatus(rs.getString("status"));
-                    c.setNomePaciente(rs.getString("nomePaciente"));
-                    c.setNomeConvenio(rs.getString("nomeConvenio"));
-                    lista.add(c);
+               while (rs.next()) {
+                 Consulta c = new Consulta();
+                 c.setIdConsulta(rs.getInt("idConsulta"));
+                 c.setIdPaciente(rs.getInt("idPaciente")); // ← linha que estava faltando
+                 c.setDataHora(rs.getString("dataHora"));
+                 c.setStatus(rs.getString("status"));
+                 c.setNomePaciente(rs.getString("nomePaciente"));
+                 c.setNomeConvenio(rs.getString("nomeConvenio"));
+                  lista.add(c);
                 }
             }
         } catch (SQLException e) {
