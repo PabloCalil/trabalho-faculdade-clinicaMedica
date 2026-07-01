@@ -1,0 +1,136 @@
+package Services;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ConsultaDAO {
+
+    // Busca consultas do dia para um médico específico
+    public List<Consulta> listarFilaDoDia(int idUsuario) {
+        List<Consulta> lista = new ArrayList<>();
+        String sql = "SELECT c.idConsulta, c.idPaciente, c.dataHora, s.nome AS status, "
+                   + "p.nome AS nomePaciente, "
+                   + "cv.nome AS nomeConvenio "
+                   + "FROM consulta c "
+                   + "JOIN paciente p ON p.idPaciente = c.idPaciente "
+                   + "JOIN status s ON s.idStatus = c.idStatus "
+                   + "LEFT JOIN convenio cv ON cv.idConvenio = c.idConvenio "
+                   + "WHERE c.idUsuario = ? "
+                   + "AND DATE(c.dataHora) = CURDATE() "
+                   + "AND s.nome != 'Cancelado' "
+                   + "ORDER BY c.dataHora";
+
+        try (Connection conn = BDSConnection.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idUsuario);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Consulta c = new Consulta();
+                    c.setIdConsulta(rs.getInt("idConsulta"));
+                    c.setIdPaciente(rs.getInt("idPaciente"));
+                    c.setDataHora(rs.getString("dataHora"));
+                    c.setStatus(rs.getString("status"));
+                    c.setNomePaciente(rs.getString("nomePaciente"));
+                    c.setNomeConvenio(rs.getString("nomeConvenio"));
+                    lista.add(c);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao carregar fila: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    public boolean inserir(int idPaciente, int idMedico, Integer idConvenio, String dataHora) {
+        String sql = "INSERT INTO consulta (idPaciente, idUsuario, idConvenio, dataHora, idStatus) "
+                   + "VALUES (?, ?, ?, ?, (SELECT idStatus FROM status WHERE nome = 'Agendado'))";
+        try (Connection conn = BDSConnection.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idPaciente);
+            stmt.setInt(2, idMedico);
+            if (idConvenio != null && idConvenio > 0)
+                stmt.setInt(3, idConvenio);
+            else
+                stmt.setNull(3, java.sql.Types.INTEGER);
+            stmt.setString(4, dataHora);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Erro ao inserir consulta: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public List<Consulta> listarParaCheckin() {
+        List<Consulta> lista = new ArrayList<>();
+        String sql = "SELECT c.idConsulta, c.dataHora, s.nome AS status, "
+                   + "p.nome AS nomePaciente, "
+                   + "u.nome AS nomeMedico, "
+                   + "cv.nome AS nomeConvenio "
+                   + "FROM consulta c "
+                   + "JOIN paciente p ON p.idPaciente = c.idPaciente "
+                   + "JOIN usuario u ON u.idUsuario = c.idUsuario "
+                   + "JOIN status s ON s.idStatus = c.idStatus "
+                   + "LEFT JOIN convenio cv ON cv.idConvenio = c.idConvenio "
+                   + "WHERE DATE(c.dataHora) = CURDATE() "
+                   + "AND s.nome = 'Agendado' "
+                   + "ORDER BY c.dataHora";
+        try (Connection conn = BDSConnection.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Consulta c = new Consulta();
+                c.setIdConsulta(rs.getInt("idConsulta"));
+                c.setDataHora(rs.getString("dataHora"));
+                c.setStatus(rs.getString("status"));
+                c.setNomePaciente(rs.getString("nomePaciente"));
+                c.setNomeMedico(rs.getString("nomeMedico"));
+                c.setNomeConvenio(rs.getString("nomeConvenio"));
+                lista.add(c);
+            }
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar para check-in: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    public boolean atualizar(int idConsulta, int idPaciente, int idMedico, Integer idConvenio, String dataHora) {
+        String sql = "UPDATE consulta SET idPaciente=?, idUsuario=?, idConvenio=?, dataHora=? WHERE idConsulta=?";
+        try (Connection conn = BDSConnection.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idPaciente);
+            stmt.setInt(2, idMedico);
+            if (idConvenio != null && idConvenio > 0)
+                stmt.setInt(3, idConvenio);
+            else
+                stmt.setNull(3, java.sql.Types.INTEGER);
+            stmt.setString(4, dataHora);
+            stmt.setInt(5, idConsulta);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Erro ao atualizar consulta: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean atualizarStatus(int idConsulta, String novoStatus) {
+        // Converte o nome do status para o idStatus correspondente (FK).
+        String sql = "UPDATE consulta c "
+                   + "JOIN status s ON s.nome = ? "
+                   + "SET c.idStatus = s.idStatus "
+                   + "WHERE c.idConsulta = ?";
+        try (Connection conn = BDSConnection.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, novoStatus);
+            stmt.setInt(2, idConsulta);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Erro ao atualizar status: " + e.getMessage());
+            return false;
+        }
+    }
+}
