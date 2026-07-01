@@ -3,6 +3,7 @@ package com.mycompany.clinicamedica.newpackage.view.Admin;
 import Services.BDSConnection;
 import Services.Usuario;
 import Services.UsuarioDAO;
+import com.mycompany.clinicamedica.newpackage.view.ui.Tema;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.Connection;
@@ -41,43 +42,51 @@ public class TelaGerenciarUsuarios extends JFrame {
     private Map<String, Integer> mapaEspecialidades = new LinkedHashMap<>();
 
     private final Color corCremeClaro   = new Color(251, 251, 250);
-    private final Color corDestaqueGold = new Color(193, 158, 103);
-    private final Color corTomMedio     = new Color(110, 102, 95);
-    private final Color corRotuloCinza  = new Color(180, 169, 158);
-    private final Color corMarromEscuro = new Color(61, 28, 6);
+    private final Color corDestaqueGold = Tema.GOLD;
+    private final Color corTomMedio     = Tema.TOM_MEDIO;
+    private final Color corRotuloCinza  = new Color(90, 80, 70);
+    private final Color corMarromEscuro = Tema.MARROM_ESCURO;
     private final Color corVermelho     = new Color(180, 70, 70);
     private final Color corVerde        = new Color(60, 140, 60);
+    private final Color corFundo        = Tema.FUNDO_CLARO;
+    private final Color corTexto        = Tema.TEXTO_ESCURO;
 
     public TelaGerenciarUsuarios() {
         setTitle("Health Equilibrium - Gerenciar Usuários");
-        setSize(1200, 700);
+        setSize(1200, 740);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setResizable(false);
 
-        JPanel painelFundo = new JPanel();
-        painelFundo.setBackground(corTomMedio);
-        painelFundo.setLayout(null);
-        setContentPane(painelFundo);
-
-        // Título
-        JLabel lblTitulo = new JLabel("Gerenciar Usuários");
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 32));
-        lblTitulo.setForeground(corCremeClaro);
-        lblTitulo.setBounds(30, 20, 500, 40);
-        painelFundo.add(lblTitulo);
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(corFundo);
+        setContentPane(root);
 
         // ================================================================
-        // PAINEL ESQUERDO — filtros + tabela
+        // CABEÇALHO PADRÃO (mesmo layout/paleta das demais telas)
+        // ================================================================
+        btnVoltar = Tema.botaoPerigo("Voltar");
+        btnVoltar.addActionListener(e -> dispose());
+        root.add(Tema.cabecalho("Gerenciar Usuários — Visão Geral de Usuários e Funcionários",
+                 null, btnVoltar), BorderLayout.NORTH);
+
+        JPanel painelFundo = new JPanel();
+        painelFundo.setBackground(corFundo);
+        painelFundo.setLayout(null);
+        painelFundo.setBorder(new EmptyBorder(20, 20, 20, 20));
+        root.add(painelFundo, BorderLayout.CENTER);
+
+        // ================================================================
+        // PAINEL ESQUERDO — filtros + tabela (cartão branco)
         // ================================================================
         JPanel painelLista = new JPanel();
-        painelLista.setBackground(corMarromEscuro);
+        painelLista.setBackground(Color.WHITE);
         painelLista.setLayout(null);
-        painelLista.setBounds(20, 75, 540, 570);
+        painelLista.setBounds(20, 15, 540, 585);
         painelLista.setBorder(new LineBorder(corDestaqueGold, 1, true));
         painelFundo.add(painelLista);
 
-        Font fonteLabel = new Font("Segoe UI", Font.PLAIN, 13);
+        Font fonteLabel = new Font("Segoe UI", Font.BOLD, 13);
 
         // Filtro texto
         JLabel lblBuscar = new JLabel("Buscar:");
@@ -141,15 +150,15 @@ public class TelaGerenciarUsuarios extends JFrame {
         // PAINEL DIREITO — edição
         // ================================================================
         JPanel painelEdicao = new JPanel();
-        painelEdicao.setBackground(corMarromEscuro);
+        painelEdicao.setBackground(Color.WHITE);
         painelEdicao.setLayout(null);
-        painelEdicao.setBounds(575, 75, 600, 570);
+        painelEdicao.setBounds(575, 15, 600, 585);
         painelEdicao.setBorder(new LineBorder(corDestaqueGold, 1, true));
         painelFundo.add(painelEdicao);
 
         JLabel lblEdicaoTitulo = new JLabel("Dados do Usuário Selecionado");
         lblEdicaoTitulo.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblEdicaoTitulo.setForeground(corDestaqueGold);
+        lblEdicaoTitulo.setForeground(corMarromEscuro);
         lblEdicaoTitulo.setBounds(20, 15, 400, 25);
         painelEdicao.add(lblEdicaoTitulo);
 
@@ -214,7 +223,7 @@ public class TelaGerenciarUsuarios extends JFrame {
 
         // CRM | Especialidade (apenas médico)
         lblCrm = new JLabel("CRM:");
-        lblCrm.setFont(fonteLabel); lblCrm.setForeground(corDestaqueGold);
+        lblCrm.setFont(fonteLabel); lblCrm.setForeground(corMarromEscuro);
         lblCrm.setBounds(20, 335, 100, 20);
         lblCrm.setVisible(false);
         painelEdicao.add(lblCrm);
@@ -225,7 +234,7 @@ public class TelaGerenciarUsuarios extends JFrame {
         painelEdicao.add(txtCrm);
 
         lblEspecialidade = new JLabel("Especialidade:");
-        lblEspecialidade.setFont(fonteLabel); lblEspecialidade.setForeground(corDestaqueGold);
+        lblEspecialidade.setFont(fonteLabel); lblEspecialidade.setForeground(corMarromEscuro);
         lblEspecialidade.setBounds(310, 335, 200, 20);
         lblEspecialidade.setVisible(false);
         painelEdicao.add(lblEspecialidade);
@@ -251,12 +260,6 @@ public class TelaGerenciarUsuarios extends JFrame {
         btnSenha.setBounds(20, 490, 130, 42);
         btnSenha.setEnabled(false);
         painelEdicao.add(btnSenha);
-
-        // Botão voltar
-        btnVoltar = criarBotao("Voltar", corTomMedio.darker(), Color.WHITE);
-        btnVoltar.setBounds(20, 635, 150, 35);
-        btnVoltar.setEnabled(true);
-        painelFundo.add(btnVoltar);
 
         // ================================================================
         // EVENTOS
@@ -478,9 +481,9 @@ public class TelaGerenciarUsuarios extends JFrame {
     // ================================================================
     private JTextField criarCampo() {
         JTextField campo = new JTextField();
-        campo.setBackground(corTomMedio);
-        campo.setForeground(corCremeClaro);
-        campo.setCaretColor(corCremeClaro);
+        campo.setBackground(Color.WHITE);
+        campo.setForeground(corTexto);
+        campo.setCaretColor(corTexto);
         campo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         campo.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(corDestaqueGold, 1),
@@ -494,9 +497,9 @@ public class TelaGerenciarUsuarios extends JFrame {
             MaskFormatter mf = new MaskFormatter(mascara);
             mf.setPlaceholderCharacter('_');
             JFormattedTextField campo = new JFormattedTextField(mf);
-            campo.setBackground(corTomMedio);
-            campo.setForeground(corCremeClaro);
-            campo.setCaretColor(corCremeClaro);
+            campo.setBackground(Color.WHITE);
+            campo.setForeground(corTexto);
+            campo.setCaretColor(corTexto);
             campo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
             campo.setBorder(BorderFactory.createCompoundBorder(
                     new LineBorder(corDestaqueGold, 1),
@@ -509,8 +512,8 @@ public class TelaGerenciarUsuarios extends JFrame {
     }
 
     private void estilizarCombo(JComboBox<String> combo) {
-        combo.setBackground(corTomMedio);
-        combo.setForeground(corCremeClaro);
+        combo.setBackground(Color.WHITE);
+        combo.setForeground(corTexto);
         combo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         combo.setBorder(new LineBorder(corDestaqueGold, 1));
         combo.setOpaque(true);
@@ -522,8 +525,8 @@ public class TelaGerenciarUsuarios extends JFrame {
                         list, value, index, isSelected, cellHasFocus);
                 label.setOpaque(true);
                 label.setBorder(new EmptyBorder(0, 8, 0, 0));
-                label.setBackground(isSelected ? corDestaqueGold : corTomMedio);
-                label.setForeground(isSelected ? corMarromEscuro : corCremeClaro);
+                label.setBackground(isSelected ? corDestaqueGold : Color.WHITE);
+                label.setForeground(isSelected ? corMarromEscuro : corTexto);
                 return label;
             }
         });

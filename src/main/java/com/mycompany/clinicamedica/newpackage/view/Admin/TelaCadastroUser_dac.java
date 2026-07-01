@@ -2,6 +2,7 @@ package com.mycompany.clinicamedica.newpackage.view.Admin;
 
 import Services.BDSConnection;
 import Services.UsuarioDAO;
+import com.mycompany.clinicamedica.newpackage.view.ui.Tema;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,37 +24,45 @@ public class TelaCadastroUser_dac extends JFrame {
     private JButton btnSalvarUsuario, btnNovaEspecialidade, btnVoltar;
 
     private final Color corCremeClaro   = new Color(251, 251, 250);
-    private final Color corDestaqueGold = new Color(193, 158, 103);
-    private final Color corTomMedio     = new Color(110, 102, 95);
-    private final Color corRotuloCinza  = new Color(180, 169, 158);
-    private final Color corMarromEscuro = new Color(61, 28, 6);
+    private final Color corDestaqueGold = Tema.GOLD;
+    private final Color corTomMedio     = Tema.TOM_MEDIO;
+    private final Color corRotuloCinza  = new Color(90, 80, 70);
+    private final Color corMarromEscuro = Tema.MARROM_ESCURO;
+    private final Color corFundo        = Tema.FUNDO_CLARO;
+    private final Color corTexto        = Tema.TEXTO_ESCURO;
 
     public TelaCadastroUser_dac() {
         setTitle("Health Equilibrium - Controle de Acessos");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(900, 720);
+        setSize(900, 740);
         setLocationRelativeTo(null);
         setResizable(false);
 
-        JPanel painelFundo = new JPanel();
-        painelFundo.setBackground(corTomMedio);
-        painelFundo.setLayout(null);
-        setContentPane(painelFundo);
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(corFundo);
+        setContentPane(root);
 
-        JLabel lblTitulo = new JLabel("Gerenciamento de Usuários e Perfis");
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 32));
-        lblTitulo.setForeground(corCremeClaro);
-        lblTitulo.setBounds(50, 25, 700, 40);
-        painelFundo.add(lblTitulo);
+        // ====================================================================
+        // CABEÇALHO PADRÃO (mesmo layout/paleta das demais telas)
+        // ====================================================================
+        btnVoltar = Tema.botaoPerigo("Voltar");
+        btnVoltar.addActionListener(e -> dispose());
+        root.add(Tema.cabecalho("Cadastro de Usuários — Controle de Acessos", null, btnVoltar),
+                 BorderLayout.NORTH);
+
+        JPanel painelFundo = new JPanel();
+        painelFundo.setBackground(corFundo);
+        painelFundo.setLayout(null);
+        root.add(painelFundo, BorderLayout.CENTER);
 
         JPanel painelCadastro = new JPanel();
-        painelCadastro.setBackground(corMarromEscuro);
-        painelCadastro.setBounds(50, 85, 790, 560);
+        painelCadastro.setBackground(Color.WHITE);
+        painelCadastro.setBounds(40, 15, 800, 560);
         painelCadastro.setLayout(null);
         painelCadastro.setBorder(new LineBorder(corDestaqueGold, 1, true));
         painelFundo.add(painelCadastro);
 
-        Font fonteLabel = new Font("Segoe UI", Font.PLAIN, 14);
+        Font fonteLabel = new Font("Segoe UI", Font.BOLD, 14);
 
         // --- Nome Completo ---
         JLabel lblNome = new JLabel("Nome Completo:");
@@ -117,9 +126,9 @@ public class TelaCadastroUser_dac extends JFrame {
 
         txtNovaSenha = new JPasswordField();
         txtNovaSenha.setBounds(400, 273, 360, 35);
-        txtNovaSenha.setBackground(corTomMedio);
-        txtNovaSenha.setForeground(corCremeClaro);
-        txtNovaSenha.setCaretColor(corCremeClaro);
+        txtNovaSenha.setBackground(Color.WHITE);
+        txtNovaSenha.setForeground(corTexto);
+        txtNovaSenha.setCaretColor(corTexto);
         txtNovaSenha.setBorder(new LineBorder(corDestaqueGold, 1));
         painelCadastro.add(txtNovaSenha);
 
@@ -132,15 +141,15 @@ public class TelaCadastroUser_dac extends JFrame {
 
         cbPerfil = new JComboBox<>(new String[]{"Selecione o Perfil...", "Médico", "Secretária", "Administrador"});
         cbPerfil.setBounds(30, 348, 340, 35);
-        cbPerfil.setBackground(corTomMedio);
-        cbPerfil.setForeground(corCremeClaro);
+        cbPerfil.setBackground(Color.WHITE);
+        cbPerfil.setForeground(corTexto);
         cbPerfil.setBorder(new LineBorder(corDestaqueGold, 1));
         painelCadastro.add(cbPerfil);
 
         // --- CRM | Especialidade (apenas Médico) ---
         lblCrm = new JLabel("CRM:");
         lblCrm.setFont(fonteLabel);
-        lblCrm.setForeground(corDestaqueGold);
+        lblCrm.setForeground(corMarromEscuro);
         lblCrm.setBounds(30, 400, 100, 20);
         lblCrm.setVisible(false);
         painelCadastro.add(lblCrm);
@@ -152,15 +161,15 @@ public class TelaCadastroUser_dac extends JFrame {
 
         lblEspecialidade = new JLabel("Especialidade:");
         lblEspecialidade.setFont(fonteLabel);
-        lblEspecialidade.setForeground(corDestaqueGold);
+        lblEspecialidade.setForeground(corMarromEscuro);
         lblEspecialidade.setBounds(400, 400, 200, 20);
         lblEspecialidade.setVisible(false);
         painelCadastro.add(lblEspecialidade);
 
         cbEspecialidade = new JComboBox<>();
         cbEspecialidade.setBounds(400, 423, 360, 35);
-        cbEspecialidade.setBackground(corTomMedio);
-        cbEspecialidade.setForeground(corCremeClaro);
+        cbEspecialidade.setBackground(Color.WHITE);
+        cbEspecialidade.setForeground(corTexto);
         cbEspecialidade.setBorder(new LineBorder(corDestaqueGold, 1));
         cbEspecialidade.setVisible(false);
         painelCadastro.add(cbEspecialidade);
@@ -176,25 +185,17 @@ public class TelaCadastroUser_dac extends JFrame {
         btnSalvarUsuario.setBorder(new LineBorder(corDestaqueGold.darker(), 1));
         painelCadastro.add(btnSalvarUsuario);
 
-        btnNovaEspecialidade = new JButton("+ Especialidade");
+        btnNovaEspecialidade = new JButton("Especialidade");
         btnNovaEspecialidade.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnNovaEspecialidade.setBackground(corTomMedio);
-        btnNovaEspecialidade.setForeground(corCremeClaro);
+        btnNovaEspecialidade.setBackground(Color.WHITE);
+        btnNovaEspecialidade.setForeground(corTexto);
         btnNovaEspecialidade.setBounds(295, 495, 220, 45);
         btnNovaEspecialidade.setFocusPainted(false);
+        btnNovaEspecialidade.setOpaque(true);
         btnNovaEspecialidade.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnNovaEspecialidade.setBorder(new LineBorder(corDestaqueGold, 1));
+        btnNovaEspecialidade.setBorder(new LineBorder(corDestaqueGold, 1, true));
         btnNovaEspecialidade.setVisible(false);
         painelCadastro.add(btnNovaEspecialidade);
-
-        btnVoltar = new JButton("Voltar ao Menu Admin");
-        btnVoltar.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnVoltar.setBackground(new Color(110, 102, 95).darker());
-        btnVoltar.setForeground(Color.WHITE);
-        btnVoltar.setBounds(50, 660, 200, 35);
-        btnVoltar.setFocusPainted(false);
-        btnVoltar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        painelFundo.add(btnVoltar);
 
         // ====================================================================
         // EVENTOS
@@ -291,12 +292,12 @@ public class TelaCadastroUser_dac extends JFrame {
         popup.setResizable(false);
 
         JPanel painel = new JPanel();
-        painel.setBackground(corMarromEscuro);
+        painel.setBackground(corFundo);
         painel.setLayout(null);
         painel.setBorder(new LineBorder(corDestaqueGold, 1));
         popup.setContentPane(painel);
 
-        Font fonteLabel = new Font("Segoe UI", Font.PLAIN, 14);
+        Font fonteLabel = new Font("Segoe UI", Font.BOLD, 14);
 
         JLabel lblNome = new JLabel("Nome da Especialidade:");
         lblNome.setFont(fonteLabel);
@@ -306,9 +307,9 @@ public class TelaCadastroUser_dac extends JFrame {
 
         JTextField txtNomeEsp = new JTextField();
         txtNomeEsp.setBounds(25, 45, 360, 35);
-        txtNomeEsp.setBackground(corTomMedio);
-        txtNomeEsp.setForeground(corCremeClaro);
-        txtNomeEsp.setCaretColor(corCremeClaro);
+        txtNomeEsp.setBackground(Color.WHITE);
+        txtNomeEsp.setForeground(corTexto);
+        txtNomeEsp.setCaretColor(corTexto);
         txtNomeEsp.setBorder(new LineBorder(corDestaqueGold, 1));
         painel.add(txtNomeEsp);
 
@@ -320,9 +321,9 @@ public class TelaCadastroUser_dac extends JFrame {
 
         JTextField txtDescEsp = new JTextField();
         txtDescEsp.setBounds(25, 118, 360, 35);
-        txtDescEsp.setBackground(corTomMedio);
-        txtDescEsp.setForeground(corCremeClaro);
-        txtDescEsp.setCaretColor(corCremeClaro);
+        txtDescEsp.setBackground(Color.WHITE);
+        txtDescEsp.setForeground(corTexto);
+        txtDescEsp.setCaretColor(corTexto);
         txtDescEsp.setBorder(new LineBorder(corDestaqueGold, 1));
         painel.add(txtDescEsp);
 
@@ -378,9 +379,9 @@ public class TelaCadastroUser_dac extends JFrame {
 
     private JTextField criarCampo() {
         JTextField campo = new JTextField();
-        campo.setBackground(corTomMedio);
-        campo.setForeground(corCremeClaro);
-        campo.setCaretColor(corCremeClaro);
+        campo.setBackground(Color.WHITE);
+        campo.setForeground(corTexto);
+        campo.setCaretColor(corTexto);
         campo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         campo.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(corDestaqueGold, 1),
@@ -394,9 +395,9 @@ public class TelaCadastroUser_dac extends JFrame {
             MaskFormatter mf = new MaskFormatter(mascara);
             mf.setPlaceholderCharacter('_');
             JFormattedTextField campo = new JFormattedTextField(mf);
-            campo.setBackground(corTomMedio);
-            campo.setForeground(corCremeClaro);
-            campo.setCaretColor(corCremeClaro);
+            campo.setBackground(Color.WHITE);
+            campo.setForeground(corTexto);
+            campo.setCaretColor(corTexto);
             campo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             campo.setBorder(BorderFactory.createCompoundBorder(
                     new LineBorder(corDestaqueGold, 1),

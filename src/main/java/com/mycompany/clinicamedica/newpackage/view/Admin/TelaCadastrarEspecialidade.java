@@ -23,27 +23,39 @@ public class TelaCadastrarEspecialidade extends JFrame {
 
     private final Color marromEscuro = Tema.MARROM_ESCURO;
     private final Color corGold      = Tema.GOLD;
-    private final Color corTomMedio  = Tema.TOM_MEDIO;
+    private final Color corTexto     = Tema.TEXTO_ESCURO;
     private final Color corCreme     = Tema.FUNDO_CLARO;
-    private final Color corRotulo    = new Color(180, 169, 158);
+    private final Color corRotulo    = new Color(90, 80, 70);
 
     public TelaCadastrarEspecialidade() {
-        setTitle("Configurações - Áreas Clínicas");
-        setSize(660, 520);
+        setTitle("Health Equilibrium - Áreas Clínicas");
+        setSize(760, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(false);
 
-        JPanel principal = new JPanel(new BorderLayout(0, 15));
-        principal.setBackground(corTomMedio);
-        principal.setBorder(new EmptyBorder(20, 20, 20, 20));
-        setContentPane(principal);
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(corCreme);
+        setContentPane(root);
 
         // ====================================================================
-        // PAINEL DE ENTRADA
+        // CABEÇALHO PADRÃO (mesmo layout/paleta das demais telas)
+        // ====================================================================
+        JButton btnVoltar = Tema.botaoPerigo("Voltar");
+        btnVoltar.addActionListener(e -> dispose());
+        root.add(Tema.cabecalho("Especialidades Clínicas — Áreas Clínicas", null, btnVoltar),
+                 BorderLayout.NORTH);
+
+        JPanel principal = new JPanel(new BorderLayout(0, 15));
+        principal.setBackground(corCreme);
+        principal.setBorder(new EmptyBorder(20, 40, 20, 40));
+        root.add(principal, BorderLayout.CENTER);
+
+        // ====================================================================
+        // PAINEL DE ENTRADA (cartão branco)
         // ====================================================================
         JPanel painelEntrada = new JPanel();
-        painelEntrada.setBackground(marromEscuro);
+        painelEntrada.setBackground(Color.WHITE);
         painelEntrada.setLayout(null);
         painelEntrada.setPreferredSize(new Dimension(0, 150));
         painelEntrada.setBorder(BorderFactory.createCompoundBorder(
@@ -52,7 +64,7 @@ public class TelaCadastrarEspecialidade extends JFrame {
         ));
         principal.add(painelEntrada, BorderLayout.NORTH);
 
-        Font fonteLabel = new Font("Segoe UI", Font.PLAIN, 13);
+        Font fonteLabel = new Font("Segoe UI", Font.BOLD, 13);
 
         JLabel lblNome = new JLabel("Nome da Especialidade:");
         lblNome.setFont(fonteLabel);
@@ -62,9 +74,9 @@ public class TelaCadastrarEspecialidade extends JFrame {
 
         txtNovaEsp = new JTextField();
         txtNovaEsp.setBounds(15, 33, 380, 33);
-        txtNovaEsp.setBackground(corTomMedio);
-        txtNovaEsp.setForeground(Color.WHITE);
-        txtNovaEsp.setCaretColor(Color.WHITE);
+        txtNovaEsp.setBackground(Color.WHITE);
+        txtNovaEsp.setForeground(corTexto);
+        txtNovaEsp.setCaretColor(corTexto);
         txtNovaEsp.setBorder(new LineBorder(corGold, 1));
         painelEntrada.add(txtNovaEsp);
 
@@ -76,9 +88,9 @@ public class TelaCadastrarEspecialidade extends JFrame {
 
         txtDescricao = new JTextField();
         txtDescricao.setBounds(15, 95, 380, 33);
-        txtDescricao.setBackground(corTomMedio);
-        txtDescricao.setForeground(Color.WHITE);
-        txtDescricao.setCaretColor(Color.WHITE);
+        txtDescricao.setBackground(Color.WHITE);
+        txtDescricao.setForeground(corTexto);
+        txtDescricao.setCaretColor(corTexto);
         txtDescricao.setBorder(new LineBorder(corGold, 1));
         painelEntrada.add(txtDescricao);
 
@@ -88,6 +100,7 @@ public class TelaCadastrarEspecialidade extends JFrame {
         btnAdd.setForeground(marromEscuro);
         btnAdd.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnAdd.setFocusPainted(false);
+        btnAdd.setOpaque(true);
         btnAdd.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnAdd.setBorder(new LineBorder(corGold.darker(), 1));
         painelEntrada.add(btnAdd);
@@ -98,6 +111,7 @@ public class TelaCadastrarEspecialidade extends JFrame {
         btnExcluir.setForeground(Color.WHITE);
         btnExcluir.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnExcluir.setFocusPainted(false);
+        btnExcluir.setOpaque(true);
         btnExcluir.setCursor(new Cursor(Cursor.HAND_CURSOR));
         painelEntrada.add(btnExcluir);
 
@@ -113,14 +127,7 @@ public class TelaCadastrarEspecialidade extends JFrame {
         };
 
         JTable tabela = new JTable(modelo);
-        tabela.setRowHeight(28);
-        tabela.setBackground(new Color(251, 251, 250));
-        tabela.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        tabela.getTableHeader().setBackground(marromEscuro);
-        tabela.getTableHeader().setForeground(corGold);
-        tabela.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
-        tabela.setSelectionBackground(corGold);
-        tabela.setSelectionForeground(marromEscuro);
+        Tema.estilizarTabela(tabela);
 
         // Largura das colunas
         tabela.getColumnModel().getColumn(0).setPreferredWidth(40);

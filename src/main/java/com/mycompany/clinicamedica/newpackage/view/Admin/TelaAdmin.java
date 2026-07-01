@@ -23,23 +23,15 @@ public class TelaAdmin extends JFrame {
         painelPrincipal.setBackground(fundoClaro);
         setContentPane(painelPrincipal);
 
-        // --- TOPO/HEADER ---
-        JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(marromEscuro);
-        header.setBorder(new EmptyBorder(20, 40, 20, 40));
-        
-        JLabel lblTitulo = new JLabel("Health Equilibrium — Módulo Master");
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblTitulo.setForeground(Color.WHITE);
-        header.add(lblTitulo, BorderLayout.WEST);
-
+        // --- TOPO/HEADER (padrão Tema.cabecalho, igual às demais telas) ---
         JButton btnSair = Tema.botaoPerigo("Sair do Sistema");
         btnSair.addActionListener(e -> {
             this.dispose();
             new TelaLogin().setVisible(true);
         });
-        header.add(btnSair, BorderLayout.EAST);
-        painelPrincipal.add(header, BorderLayout.NORTH);
+        painelPrincipal.add(
+            Tema.cabecalho("Health Equilibrium — Módulo Master", null, btnSair),
+            BorderLayout.NORTH);
 
         // --- MENU INTERNO ---
         JPanel gridMenu = new JPanel(new GridLayout(2, 2, 25, 25));

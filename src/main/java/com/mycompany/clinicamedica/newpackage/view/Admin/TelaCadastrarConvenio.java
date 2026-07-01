@@ -1,6 +1,7 @@
 package com.mycompany.clinicamedica.newpackage.view.Admin;
 
 import Services.ConvenioDAO;
+import com.mycompany.clinicamedica.newpackage.view.ui.Tema;
 import java.awt.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,43 +22,50 @@ public class TelaCadastrarConvenio extends JFrame {
     private ConvenioDAO dao;
 
     private final Color corCremeClaro   = new Color(251, 251, 250);
-    private final Color corDestaqueGold = new Color(193, 158, 103);
-    private final Color corTomMedio     = new Color(110, 102, 95);
-    private final Color corRotuloCinza  = new Color(180, 169, 158);
-    private final Color corMarromEscuro = new Color(61, 28, 6);
+    private final Color corDestaqueGold = Tema.GOLD;
+    private final Color corTomMedio     = Tema.TOM_MEDIO;
+    private final Color corRotuloCinza  = new Color(90, 80, 70);
+    private final Color corMarromEscuro = Tema.MARROM_ESCURO;
+    private final Color corFundo        = Tema.FUNDO_CLARO;
+    private final Color corTexto        = Tema.TEXTO_ESCURO;
 
     public TelaCadastrarConvenio() {
         setTitle("Health Equilibrium - Convênios");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(900, 700);
+        setSize(900, 760);
         setLocationRelativeTo(null);
         setResizable(false);
 
         dao = new ConvenioDAO();
 
-        JPanel painelFundo = new JPanel();
-        painelFundo.setBackground(corTomMedio);
-        painelFundo.setLayout(null);
-        setContentPane(painelFundo);
-
-        // --- Título ---
-        JLabel lblTitulo = new JLabel("Cadastro de Convênios");
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 32));
-        lblTitulo.setForeground(corCremeClaro);
-        lblTitulo.setBounds(50, 25, 600, 40);
-        painelFundo.add(lblTitulo);
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(corFundo);
+        setContentPane(root);
 
         // ====================================================================
-        // PAINEL DE FORMULÁRIO
+        // CABEÇALHO PADRÃO (mesmo layout/paleta das demais telas)
+        // ====================================================================
+        btnVoltar = Tema.botaoPerigo("Voltar");
+        btnVoltar.addActionListener(e -> dispose());
+        root.add(Tema.cabecalho("Cadastro de Convênios — Convênios", null, btnVoltar),
+                 BorderLayout.NORTH);
+
+        JPanel corpo = new JPanel(new BorderLayout(0, 15));
+        corpo.setBackground(corFundo);
+        corpo.setBorder(new EmptyBorder(20, 40, 20, 40));
+        root.add(corpo, BorderLayout.CENTER);
+
+        // ====================================================================
+        // PAINEL DE FORMULÁRIO (cartão branco)
         // ====================================================================
         JPanel painelForm = new JPanel();
-        painelForm.setBackground(corMarromEscuro);
+        painelForm.setBackground(Color.WHITE);
         painelForm.setLayout(null);
-        painelForm.setBounds(50, 85, 790, 210);
+        painelForm.setPreferredSize(new Dimension(0, 215));
         painelForm.setBorder(new LineBorder(corDestaqueGold, 1, true));
-        painelFundo.add(painelForm);
+        corpo.add(painelForm, BorderLayout.NORTH);
 
-        Font fonteLabel = new Font("Segoe UI", Font.PLAIN, 14);
+        Font fonteLabel = new Font("Segoe UI", Font.BOLD, 14);
 
         // --- Linha 1: Nome | CNPJ ---
         JLabel lblNome = new JLabel("Nome do Convênio:");
@@ -102,7 +110,7 @@ public class TelaCadastrarConvenio extends JFrame {
         painelForm.add(txtValidade);
 
         // --- Botões do formulário ---
-        btnAdicionar = new JButton("+ Adicionar Convênio");
+        btnAdicionar = new JButton("Adicionar Convênio");
         btnAdicionar.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnAdicionar.setBackground(corDestaqueGold);
         btnAdicionar.setForeground(corMarromEscuro);
@@ -153,21 +161,8 @@ public class TelaCadastrarConvenio extends JFrame {
         tabela.getColumnModel().getColumn(4).setPreferredWidth(100);
 
         JScrollPane scroll = new JScrollPane(tabela);
-        scroll.setBounds(50, 315, 790, 300);
         scroll.setBorder(new LineBorder(corDestaqueGold, 1));
-        painelFundo.add(scroll);
-
-        // --- Botão Voltar ---
-        btnVoltar = new JButton("Voltar ao Menu");
-        btnVoltar.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnVoltar.setBackground(corTomMedio.darker());
-        btnVoltar.setForeground(Color.WHITE);
-        btnVoltar.setBounds(50, 630, 180, 35);
-        btnVoltar.setFocusPainted(false);
-        btnVoltar.setOpaque(true);
-        btnVoltar.setBorderPainted(true);
-        btnVoltar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        painelFundo.add(btnVoltar);
+        corpo.add(scroll, BorderLayout.CENTER);
 
         // ====================================================================
         // EVENTOS
@@ -286,9 +281,9 @@ public class TelaCadastrarConvenio extends JFrame {
     }
 
     private void estilizarCampo(JTextField campo) {
-        campo.setBackground(corTomMedio);
-        campo.setForeground(corCremeClaro);
-        campo.setCaretColor(corCremeClaro);
+        campo.setBackground(Color.WHITE);
+        campo.setForeground(corTexto);
+        campo.setCaretColor(corTexto);
         campo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         campo.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(corDestaqueGold, 1),
