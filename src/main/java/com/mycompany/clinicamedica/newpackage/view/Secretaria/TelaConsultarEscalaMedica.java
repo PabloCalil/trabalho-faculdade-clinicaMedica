@@ -37,15 +37,19 @@ public class TelaConsultarEscalaMedica extends JFrame {
     private final Map<String, Integer> idConsultaPorHorario = new LinkedHashMap<>();
     private final Map<String, String>  pacientePorHorario   = new LinkedHashMap<>();
 
-    // ── Paleta ────────────────────────────────────────────────────────────────
+    // ── Paleta (mesmo padrão da TelaMedico) ─────────────────────────────────────
     private static final Color MARROM  = Tema.MARROM_ESCURO;
     private static final Color GOLD    = Tema.GOLD;
     private static final Color MEDIO   = Tema.TOM_MEDIO;
-    private static final Color CREME   = new Color(251, 251, 250);
-    private static final Color ROTULO  = new Color(180, 169, 158);
+    private static final Color FUNDO   = Tema.FUNDO_CLARO;
+    private static final Color TEXTO   = Tema.TEXTO_ESCURO;
+    private static final Color ROTULO  = new Color(90, 80, 70);
     private static final Color C_LIVRE   = new Color(210, 235, 210);
     private static final Color C_OCUPADO = new Color(245, 220, 215);
     private static final Color C_PRESENTE = new Color(200, 220, 245);
+
+    // Tamanho único para os botões de ação, garantindo proporção harmoniosa.
+    private static final Dimension BTN_ACAO = new Dimension(160, 36);
 
     private static final String[] HORARIOS = {
         "08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30",
@@ -63,7 +67,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
 
         // Raiz usa BorderLayout — a tabela ficará em CENTER e vai esticar
         JPanel root = new JPanel(new BorderLayout());
-        root.setBackground(MEDIO);
+        root.setBackground(FUNDO);
         setContentPane(root);
 
         root.add(criarHeader(),   BorderLayout.NORTH);
@@ -79,18 +83,14 @@ public class TelaConsultarEscalaMedica extends JFrame {
         h.setBackground(MARROM);
         h.setBorder(new CompoundBorder(
             BorderFactory.createMatteBorder(0, 0, 2, 0, GOLD),
-            new EmptyBorder(14, 28, 14, 28)));
+            new EmptyBorder(15, 40, 15, 40)));
 
         JLabel lbl = new JLabel("Agenda Médica — Agendamento e Atendimento");
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 22));
         lbl.setForeground(Color.WHITE);
         h.add(lbl, BorderLayout.WEST);
 
-        JButton btnFechar = new JButton("Fechar");
-        btnFechar.setBackground(new Color(180, 70, 70));
-        btnFechar.setForeground(Color.WHITE);
-        btnFechar.setFocusPainted(false);
-        btnFechar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JButton btnFechar = Tema.botaoPerigo("Fechar");
         btnFechar.addActionListener(e -> dispose());
         h.add(btnFechar, BorderLayout.EAST);
 
@@ -99,9 +99,9 @@ public class TelaConsultarEscalaMedica extends JFrame {
 
     // ── CONTEÚDO PRINCIPAL (BorderLayout) ─────────────────────────────────────
     private JPanel criarConteudo() {
-        JPanel main = new JPanel(new BorderLayout(0, 10));
-        main.setBackground(MEDIO);
-        main.setBorder(new EmptyBorder(14, 18, 14, 18));
+        JPanel main = new JPanel(new BorderLayout(0, 12));
+        main.setBackground(FUNDO);
+        main.setBorder(new EmptyBorder(20, 40, 20, 40));
 
         main.add(criarFiltros(),   BorderLayout.NORTH);
         main.add(criarTabela(),    BorderLayout.CENTER);  // ← estica com a janela
@@ -113,10 +113,10 @@ public class TelaConsultarEscalaMedica extends JFrame {
     // ── BARRA DE FILTROS ──────────────────────────────────────────────────────
     private JPanel criarFiltros() {
         JPanel p = new JPanel(new GridBagLayout());
-        p.setBackground(new Color(45, 20, 4));
+        p.setBackground(Color.WHITE);
         p.setBorder(new CompoundBorder(
             new LineBorder(GOLD, 1, true),
-            new EmptyBorder(10, 16, 10, 16)));
+            new EmptyBorder(12, 18, 12, 18)));
 
         GridBagConstraints g = new GridBagConstraints();
         g.insets = new Insets(2, 6, 2, 6);
@@ -140,18 +140,13 @@ public class TelaConsultarEscalaMedica extends JFrame {
         spinnerData = new JSpinner(dm);
         JSpinner.DateEditor de = new JSpinner.DateEditor(spinnerData, "dd/MM/yyyy");
         spinnerData.setEditor(de);
-        de.getTextField().setBackground(MEDIO);
-        de.getTextField().setForeground(CREME);
-        de.getTextField().setCaretColor(CREME);
-        de.getTextField().setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        spinnerData.setBackground(MEDIO);
-        spinnerData.setBorder(new LineBorder(GOLD, 1));
-        spinnerData.setPreferredSize(new Dimension(160, 32));
+        estilizarSpinner(spinnerData, de);
+        spinnerData.setPreferredSize(new Dimension(160, 34));
         p.add(spinnerData, g);
 
         g.gridx = 2; g.weightx = 0; g.gridheight = 2; g.anchor = GridBagConstraints.SOUTH;
         btnGerar = botaoPrimario("Ver Agenda");
-        btnGerar.setPreferredSize(new Dimension(130, 32));
+        btnGerar.setPreferredSize(BTN_ACAO);
         p.add(btnGerar, g);
 
         return p;
@@ -160,11 +155,11 @@ public class TelaConsultarEscalaMedica extends JFrame {
     // ── ÁREA DA TABELA (cresce com a janela) ──────────────────────────────────
     private JPanel criarTabela() {
         JPanel p = new JPanel(new BorderLayout(0, 6));
-        p.setBackground(MEDIO);
+        p.setBackground(FUNDO);
 
         // Legenda
         JPanel legenda = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
-        legenda.setBackground(MEDIO);
+        legenda.setBackground(FUNDO);
         legenda.add(chip(C_LIVRE,    "Livre"));
         legenda.add(chip(C_OCUPADO,  "Ocupado"));
         legenda.add(chip(C_PRESENTE, "Aguardando Chamada"));
@@ -217,35 +212,27 @@ public class TelaConsultarEscalaMedica extends JFrame {
 
     // ── RODAPÉ COM BOTÕES ─────────────────────────────────────────────────────
     private JPanel criarRodape() {
-        JPanel p = new JPanel(new BorderLayout());
-        p.setBackground(MEDIO);
+        JPanel p = new JPanel(new BorderLayout(0, 8));
+        p.setBackground(FUNDO);
         p.setBorder(new EmptyBorder(6, 0, 0, 0));
 
         lblResumo = new JLabel("Selecione o médico, a data e clique em \"Ver Agenda\".");
         lblResumo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lblResumo.setForeground(CREME);
-        p.add(lblResumo, BorderLayout.WEST);
+        lblResumo.setForeground(new Color(120, 100, 80));
+        p.add(lblResumo, BorderLayout.NORTH);
 
-        JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        botoes.setBackground(MEDIO);
+        JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        botoes.setBackground(FUNDO);
 
         btnAtualizar = botaoSecundario("Atualizar");
-        btnCheckin  = new JButton("Confirmar Presença");
-        btnCheckin.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnCheckin.setBackground(new Color(55, 130, 55));
-        btnCheckin.setForeground(Color.WHITE);
-        btnCheckin.setFocusPainted(false);
-        btnCheckin.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnEditar    = botaoSecundario("Editar");
+        btnCheckin   = botaoColorido("Confirmar Presença", new Color(55, 130, 55));
+        btnCancelar  = botaoColorido("Cancelar Consulta", new Color(170, 50, 50));
+        btnAgendar   = botaoPrimario("Agendar");
 
-        btnEditar   = botaoSecundario("Editar");
-        btnCancelar = new JButton("Cancelar Consulta");
-        btnCancelar.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnCancelar.setBackground(new Color(170, 50, 50));
-        btnCancelar.setForeground(Color.WHITE);
-        btnCancelar.setFocusPainted(false);
-        btnCancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        btnAgendar  = botaoPrimario("Agendar");
+        // Todos os botões de ação com o mesmo tamanho (proporção harmoniosa).
+        for (JButton b : new JButton[]{btnAtualizar, btnEditar, btnCheckin, btnCancelar, btnAgendar})
+            b.setPreferredSize(BTN_ACAO);
 
         // Estado inicial: todos desabilitados (exceto Atualizar)
         btnCheckin.setEnabled(false);
@@ -258,7 +245,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
         botoes.add(btnEditar);
         botoes.add(btnCheckin);
         botoes.add(btnAgendar);
-        p.add(botoes, BorderLayout.EAST);
+        p.add(botoes, BorderLayout.CENTER);
 
         return p;
     }
@@ -486,7 +473,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
         dlg.setResizable(false);
 
         JPanel root = new JPanel(new BorderLayout());
-        root.setBackground(MARROM);
+        root.setBackground(FUNDO);
         dlg.setContentPane(root);
 
         // Cabeçalho do dialog
@@ -501,7 +488,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
 
         // Formulário
         JPanel form = new JPanel(new GridBagLayout());
-        form.setBackground(MARROM);
+        form.setBackground(FUNDO);
         form.setBorder(new EmptyBorder(16, 20, 8, 20));
         root.add(form, BorderLayout.CENTER);
 
@@ -517,7 +504,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
         g.gridx = 1; g.weightx = 1.0; g.gridwidth = 3;
         JLabel lblMedicoVal = new JLabel(nomeMedico);
         lblMedicoVal.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        lblMedicoVal.setForeground(CREME);
+        lblMedicoVal.setForeground(TEXTO);
         form.add(lblMedicoVal, g);
 
         // Data
@@ -591,9 +578,11 @@ public class TelaConsultarEscalaMedica extends JFrame {
 
         // Botões do dialog
         JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        btns.setBackground(MARROM);
+        btns.setBackground(FUNDO);
         JButton btnCancelarDlg = botaoSecundario("Cancelar");
         JButton btnConfirmar   = botaoPrimario(editando ? "Salvar Alterações" : "Confirmar");
+        btnCancelarDlg.setPreferredSize(BTN_ACAO);
+        btnConfirmar.setPreferredSize(BTN_ACAO);
         btns.add(btnCancelarDlg);
         btns.add(btnConfirmar);
         root.add(btns, BorderLayout.SOUTH);
@@ -645,24 +634,24 @@ public class TelaConsultarEscalaMedica extends JFrame {
     }
 
     private void estilizarCombo(JComboBox<?> cb) {
-        cb.setBackground(MEDIO);
-        cb.setForeground(CREME);
+        cb.setBackground(Color.WHITE);
+        cb.setForeground(TEXTO);
         cb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         cb.setBorder(new LineBorder(GOLD, 1));
     }
 
     private void estilizarSpinner(JSpinner sp, JSpinner.DateEditor ed) {
-        sp.setBackground(MEDIO);
+        sp.setBackground(Color.WHITE);
         sp.setBorder(new LineBorder(GOLD, 1));
-        ed.getTextField().setBackground(MEDIO);
-        ed.getTextField().setForeground(CREME);
-        ed.getTextField().setCaretColor(CREME);
+        ed.getTextField().setBackground(Color.WHITE);
+        ed.getTextField().setForeground(TEXTO);
+        ed.getTextField().setCaretColor(TEXTO);
         ed.getTextField().setFont(new Font("Segoe UI", Font.PLAIN, 13));
     }
 
     private JLabel rotulo(String t) {
         JLabel l = new JLabel(t);
-        l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        l.setFont(new Font("Segoe UI", Font.BOLD, 12));
         l.setForeground(ROTULO);
         return l;
     }
@@ -690,11 +679,24 @@ public class TelaConsultarEscalaMedica extends JFrame {
 
     private JButton botaoSecundario(String t) {
         JButton b = new JButton(t);
-        b.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        b.setBackground(MEDIO);
-        b.setForeground(CREME);
+        b.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        b.setBackground(Color.WHITE);
+        b.setForeground(TEXTO);
+        b.setOpaque(true);
         b.setFocusPainted(false);
-        b.setBorder(new LineBorder(ROTULO, 1));
+        b.setBorder(new LineBorder(GOLD, 1, true));
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return b;
+    }
+
+    private JButton botaoColorido(String t, Color fundo) {
+        JButton b = new JButton(t);
+        b.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        b.setBackground(fundo);
+        b.setForeground(Color.WHITE);
+        b.setOpaque(true);
+        b.setFocusPainted(false);
+        b.setBorder(new LineBorder(fundo.darker(), 1, true));
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return b;
     }
