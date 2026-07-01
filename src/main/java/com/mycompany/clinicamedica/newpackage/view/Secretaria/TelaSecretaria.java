@@ -48,18 +48,14 @@ public class TelaSecretaria extends JFrame {
     private JPanel criarHeader() {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(MARROM);
-        header.setBorder(new EmptyBorder(18, 40, 18, 40));
+        header.setBorder(new EmptyBorder(15, 40, 15, 40));
 
         JLabel lblTitulo = new JLabel("Atendimento e Recepção Central — Health Equilibrium");
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 22));
         lblTitulo.setForeground(Color.WHITE);
         header.add(lblTitulo, BorderLayout.WEST);
 
-        JButton btnSair = new JButton("Logout");
-        btnSair.setBackground(new Color(180, 70, 70));
-        btnSair.setForeground(Color.WHITE);
-        btnSair.setFocusPainted(false);
-        btnSair.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JButton btnSair = Tema.botaoPerigo("Desconectar");
         btnSair.addActionListener(e -> { dispose(); new TelaLogin().setVisible(true); });
         header.add(btnSair, BorderLayout.EAST);
 
@@ -69,37 +65,35 @@ public class TelaSecretaria extends JFrame {
     // ── CORPO ─────────────────────────────────────────────────────────────────
 
     private JPanel criarCorpo() {
-        JPanel corpo = new JPanel(new BorderLayout(24, 0));
+        JPanel corpo = new JPanel(new BorderLayout(20, 20));
         corpo.setBackground(FUNDO);
-        corpo.setBorder(new EmptyBorder(28, 36, 28, 36));
+        corpo.setBorder(new EmptyBorder(25, 40, 25, 40));
 
-        corpo.add(criarMenuAcoes(), BorderLayout.WEST);
         corpo.add(criarPainelMonitoramento(), BorderLayout.CENTER);
+        corpo.add(criarPainelAcoes(), BorderLayout.EAST);
 
         return corpo;
     }
 
-    // ── MENU LATERAL ──────────────────────────────────────────────────────────
+    // ── PAINEL LATERAL DE AÇÕES (mesmo padrão da TelaMedico) ────────────────────
 
-    private JPanel criarMenuAcoes() {
-        JPanel painel = new JPanel(new BorderLayout(0, 0));
-        painel.setBackground(FUNDO);
-        painel.setPreferredSize(new Dimension(260, 0));
+    private JPanel criarPainelAcoes() {
+        JPanel acoes = new JPanel(new GridLayout(3, 1, 0, 15));
+        acoes.setBackground(FUNDO);
+        acoes.setPreferredSize(new Dimension(230, 0));
 
-        JPanel btnBox = new JPanel(new GridLayout(2, 1, 0, 16));
-        btnBox.setBackground(FUNDO);
-
-        JButton btnNovoPac = criarBotao("Cadastrar Novo Paciente");
-        JButton btnAgenda  = criarBotao("Agenda Médica");
+        JButton btnNovoPac = criarBotaoLateral("Cadastrar Novo Paciente");
+        JButton btnAgenda  = criarBotaoLateral("Agenda Médica");
+        JButton btnStatus  = criarBotaoLateral("Alterar Status");
 
         btnNovoPac.addActionListener(e -> new TelaCadastrarPaciente_dac().setVisible(true));
         btnAgenda.addActionListener(e -> new TelaConsultarEscalaMedica().setVisible(true));
+        btnStatus.addActionListener(e -> alterarStatusSelecionado());
 
-        btnBox.add(btnNovoPac);
-        btnBox.add(btnAgenda);
-
-        painel.add(btnBox, BorderLayout.NORTH);
-        return painel;
+        acoes.add(btnNovoPac);
+        acoes.add(btnAgenda);
+        acoes.add(btnStatus);
+        return acoes;
     }
 
     // ── PAINEL DE MONITORAMENTO ───────────────────────────────────────────────
@@ -120,26 +114,16 @@ public class TelaSecretaria extends JFrame {
         JPanel botoesTopo = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         botoesTopo.setBackground(FUNDO);
 
-        JButton btnAlterarStatus = new JButton("Alterar Status");
-        btnAlterarStatus.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnAlterarStatus.setBackground(GOLD);
-        btnAlterarStatus.setForeground(MARROM);
-        btnAlterarStatus.setFocusPainted(false);
-        btnAlterarStatus.setOpaque(true);
-        btnAlterarStatus.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnAlterarStatus.setBorder(new LineBorder(GOLD.darker(), 1, true));
-        btnAlterarStatus.addActionListener(e -> alterarStatusSelecionado());
-
         JButton btnAtualizar = new JButton("Atualizar");
-        btnAtualizar.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnAtualizar.setBackground(MARROM);
+        btnAtualizar.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnAtualizar.setBackground(Tema.TOM_MEDIO);
         btnAtualizar.setForeground(Color.WHITE);
         btnAtualizar.setFocusPainted(false);
+        btnAtualizar.setOpaque(true);
         btnAtualizar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnAtualizar.setBorder(new LineBorder(GOLD, 1, true));
+        btnAtualizar.setPreferredSize(new Dimension(140, 32));
         btnAtualizar.addActionListener(e -> carregarConsultas());
 
-        botoesTopo.add(btnAlterarStatus);
         botoesTopo.add(btnAtualizar);
         topBar.add(botoesTopo, BorderLayout.EAST);
 
@@ -303,13 +287,14 @@ public class TelaSecretaria extends JFrame {
 
     // ── UTILITÁRIOS ───────────────────────────────────────────────────────────
 
-    private JButton criarBotao(String texto) {
+    private JButton criarBotaoLateral(String texto) {
         JButton b = new JButton(texto);
-        b.setBackground(MARROM);
-        b.setForeground(Color.WHITE);
+        b.setBackground(Color.WHITE);
+        b.setForeground(Tema.TEXTO_ESCURO);
         b.setFont(new Font("Segoe UI", Font.BOLD, 14));
         b.setBorder(new LineBorder(GOLD, 1, true));
         b.setFocusPainted(false);
+        b.setOpaque(true);
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return b;
     }
