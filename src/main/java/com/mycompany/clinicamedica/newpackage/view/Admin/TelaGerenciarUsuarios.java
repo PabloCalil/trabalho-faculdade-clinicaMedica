@@ -49,7 +49,7 @@ public class TelaGerenciarUsuarios extends JFrame {
     private final Color corVerde        = new Color(60, 140, 60);
 
     public TelaGerenciarUsuarios() {
-        setTitle("🏥 Sistema Clínica Médica - Gerenciar Usuários");
+        setTitle("Health Equilibrium - Gerenciar Usuários");
         setSize(1200, 700);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -253,7 +253,7 @@ public class TelaGerenciarUsuarios extends JFrame {
         painelEdicao.add(btnSenha);
 
         // Botão voltar
-        btnVoltar = criarBotao("← Voltar", corTomMedio.darker(), Color.WHITE);
+        btnVoltar = criarBotao("Voltar", corTomMedio.darker(), Color.WHITE);
         btnVoltar.setBounds(20, 635, 150, 35);
         btnVoltar.setEnabled(true);
         painelFundo.add(btnVoltar);

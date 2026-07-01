@@ -2,9 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.mycompany.clinicamedica.newpackage.view;
+package com.mycompany.clinicamedica.newpackage.view.Admin;
 
 import Services.BDSConnection;
+import com.mycompany.clinicamedica.newpackage.view.ui.Tema;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -20,14 +21,14 @@ public class TelaCadastrarEspecialidade extends JFrame {
     private JTextField txtNovaEsp, txtDescricao;
     private DefaultTableModel modelo;
 
-    private final Color marromEscuro = new Color(61, 28, 6);
-    private final Color corGold      = new Color(193, 158, 103);
-    private final Color corTomMedio  = new Color(110, 102, 95);
-    private final Color corCreme     = new Color(244, 241, 234);
+    private final Color marromEscuro = Tema.MARROM_ESCURO;
+    private final Color corGold      = Tema.GOLD;
+    private final Color corTomMedio  = Tema.TOM_MEDIO;
+    private final Color corCreme     = Tema.FUNDO_CLARO;
     private final Color corRotulo    = new Color(180, 169, 158);
 
     public TelaCadastrarEspecialidade() {
-        setTitle("🏥 Configurações - Áreas Clínicas");
+        setTitle("Configurações - Áreas Clínicas");
         setSize(660, 520);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

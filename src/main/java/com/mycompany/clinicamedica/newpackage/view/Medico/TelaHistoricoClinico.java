@@ -1,7 +1,8 @@
-package com.mycompany.clinicamedica.newpackage.view;
+package com.mycompany.clinicamedica.newpackage.view.Medico;
 
 import Services.Prontuario;
 import Services.ProntuarioDAO;
+import com.mycompany.clinicamedica.newpackage.view.ui.Tema;
 import java.awt.*;
 import java.util.List;
 import javax.swing.*;
@@ -15,14 +16,14 @@ public class TelaHistoricoClinico extends JFrame {
     private JTable tabela;
     private final int idPaciente;
 
-    private final Color marromEscuro = new Color(61, 28, 6);
-    private final Color corGold      = new Color(193, 158, 103);
-    private final Color fundoClaro   = new Color(244, 241, 234);
+    private final Color marromEscuro = Tema.MARROM_ESCURO;
+    private final Color corGold      = Tema.GOLD;
+    private final Color fundoClaro   = Tema.FUNDO_CLARO;
 
     public TelaHistoricoClinico(String nomePaciente, int idPaciente) {
         this.idPaciente = idPaciente;
 
-        setTitle("VITA - Linha do Tempo e Histórico Clínico");
+        setTitle("Health Equilibrium - Linha do Tempo e Histórico Clínico");
         setSize(750, 550);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

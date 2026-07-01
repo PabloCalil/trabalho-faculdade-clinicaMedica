@@ -1,9 +1,11 @@
-package com.mycompany.clinicamedica.newpackage.view;
+package com.mycompany.clinicamedica.newpackage.view.Medico;
 
 import Services.ChamadaDAO;
 import Services.Consulta;
 import Services.ConsultaDAO;
 import Services.StatusDAO;
+import com.mycompany.clinicamedica.newpackage.view.TelaLogin;
+import com.mycompany.clinicamedica.newpackage.view.ui.Tema;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -30,16 +32,16 @@ public class TelaMedico extends JFrame {
     // Opcao usada apenas para limpar o filtro e exibir toda a fila.
     private static final String FILTRO_TODOS = "Todos";
 
-    private final Color marromEscuro = new Color(61, 28, 6);
-    private final Color corGold      = new Color(193, 158, 103);
-    private final Color fundoClaro   = new Color(244, 241, 234);
-    private final Color corTomMedio  = new Color(110, 102, 95);
+    private final Color marromEscuro = Tema.MARROM_ESCURO;
+    private final Color corGold      = Tema.GOLD;
+    private final Color fundoClaro   = Tema.FUNDO_CLARO;
+    private final Color corTomMedio  = Tema.TOM_MEDIO;
 
     public TelaMedico(String nomeMedico, String especialidade, int idUsuario) {
         this.nomeDoMedicoLogado = nomeMedico;
         this.idUsuarioLogado    = idUsuario;
 
-        setTitle("VITA — Ambiente do Profissional Clínico");
+        setTitle("Health Equilibrium — Ambiente do Profissional Clínico");
         setSize(1100, 660);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

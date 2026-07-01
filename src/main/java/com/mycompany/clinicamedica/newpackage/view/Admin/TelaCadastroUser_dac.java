@@ -29,7 +29,7 @@ public class TelaCadastroUser_dac extends JFrame {
     private final Color corMarromEscuro = new Color(61, 28, 6);
 
     public TelaCadastroUser_dac() {
-        setTitle("🏥 Sistema Clínica Médica - Controle de Acessos");
+        setTitle("Health Equilibrium - Controle de Acessos");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(900, 720);
         setLocationRelativeTo(null);
@@ -187,7 +187,7 @@ public class TelaCadastroUser_dac extends JFrame {
         btnNovaEspecialidade.setVisible(false);
         painelCadastro.add(btnNovaEspecialidade);
 
-        btnVoltar = new JButton("← Voltar ao Menu Admin");
+        btnVoltar = new JButton("Voltar ao Menu Admin");
         btnVoltar.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnVoltar.setBackground(new Color(110, 102, 95).darker());
         btnVoltar.setForeground(Color.WHITE);

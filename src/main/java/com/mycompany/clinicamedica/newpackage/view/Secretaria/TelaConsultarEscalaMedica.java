@@ -4,6 +4,7 @@ import Services.BDSConnection;
 import Services.ConsultaDAO;
 import Services.Paciente;
 import Services.PacienteDAO;
+import com.mycompany.clinicamedica.newpackage.view.ui.Tema;
 import java.awt.*;
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -37,9 +38,9 @@ public class TelaConsultarEscalaMedica extends JFrame {
     private final Map<String, String>  pacientePorHorario   = new LinkedHashMap<>();
 
     // ── Paleta ────────────────────────────────────────────────────────────────
-    private static final Color MARROM  = new Color(61, 28, 6);
-    private static final Color GOLD    = new Color(193, 158, 103);
-    private static final Color MEDIO   = new Color(110, 102, 95);
+    private static final Color MARROM  = Tema.MARROM_ESCURO;
+    private static final Color GOLD    = Tema.GOLD;
+    private static final Color MEDIO   = Tema.TOM_MEDIO;
     private static final Color CREME   = new Color(251, 251, 250);
     private static final Color ROTULO  = new Color(180, 169, 158);
     private static final Color C_LIVRE   = new Color(210, 235, 210);
@@ -53,7 +54,7 @@ public class TelaConsultarEscalaMedica extends JFrame {
 
     // ═════════════════════════════════════════════════════════════════════════
     public TelaConsultarEscalaMedica() {
-        setTitle("VITA — Agenda Médica");
+        setTitle("Health Equilibrium — Agenda Médica");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setMinimumSize(new Dimension(860, 540));
         setSize(1080, 700);
@@ -228,23 +229,23 @@ public class TelaConsultarEscalaMedica extends JFrame {
         JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         botoes.setBackground(MEDIO);
 
-        btnAtualizar = botaoSecundario("↻ Atualizar");
-        btnCheckin  = new JButton("✔ Confirmar Presença");
+        btnAtualizar = botaoSecundario("Atualizar");
+        btnCheckin  = new JButton("Confirmar Presença");
         btnCheckin.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnCheckin.setBackground(new Color(55, 130, 55));
         btnCheckin.setForeground(Color.WHITE);
         btnCheckin.setFocusPainted(false);
         btnCheckin.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        btnEditar   = botaoSecundario("✎ Editar");
-        btnCancelar = new JButton("✖ Cancelar Consulta");
+        btnEditar   = botaoSecundario("Editar");
+        btnCancelar = new JButton("Cancelar Consulta");
         btnCancelar.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnCancelar.setBackground(new Color(170, 50, 50));
         btnCancelar.setForeground(Color.WHITE);
         btnCancelar.setFocusPainted(false);
         btnCancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        btnAgendar  = botaoPrimario("+ Agendar");
+        btnAgendar  = botaoPrimario("Agendar");
 
         // Estado inicial: todos desabilitados (exceto Atualizar)
         btnCheckin.setEnabled(false);

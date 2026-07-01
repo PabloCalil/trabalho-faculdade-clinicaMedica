@@ -1,7 +1,9 @@
 package com.mycompany.clinicamedica.newpackage.view;
 
 import com.mycompany.clinicamedica.newpackage.view.Admin.TelaAdmin;
+import com.mycompany.clinicamedica.newpackage.view.Medico.TelaMedico;
 import com.mycompany.clinicamedica.newpackage.view.Secretaria.TelaSecretaria;
+import com.mycompany.clinicamedica.newpackage.view.ui.Tema;
 import Services.BDSConnection;
 import java.awt.*;
 import java.sql.Connection;
@@ -17,15 +19,15 @@ public class TelaLogin extends JFrame {
     private JPasswordField txtPass;
 
     public TelaLogin() {
-        setTitle("VITA v2.0 - Autenticação Corporativa");
+        setTitle("Health Equilibrium - Autenticação Corporativa");
         setSize(460, 560);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
 
-        Color marromEscuro = new Color(61, 28, 6);
-        Color corGold      = new Color(193, 158, 103);
-        Color campoFundo   = new Color(110, 102, 95);
+        Color marromEscuro = Tema.MARROM_ESCURO;
+        Color corGold      = Tema.GOLD;
+        Color campoFundo   = Tema.TOM_MEDIO;
 
         JPanel p = new JPanel(null);
         p.setBackground(marromEscuro);
@@ -38,16 +40,16 @@ public class TelaLogin extends JFrame {
         pnlHeader.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, corGold));
         p.add(pnlHeader);
 
-        JLabel lblLogo = new JLabel("V I T A", SwingConstants.CENTER);
-        lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        JLabel lblLogo = new JLabel("HEALTH EQUILIBRIUM", SwingConstants.CENTER);
+        lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 26));
         lblLogo.setForeground(corGold);
-        lblLogo.setBounds(0, 25, 460, 40);
+        lblLogo.setBounds(0, 30, 460, 34);
         pnlHeader.add(lblLogo);
 
         JLabel lblSub = new JLabel("CLÍNICA MÉDICA PREMIUM", SwingConstants.CENTER);
         lblSub.setFont(new Font("Segoe UI", Font.BOLD, 11));
         lblSub.setForeground(Color.LIGHT_GRAY);
-        lblSub.setBounds(0, 65, 460, 20);
+        lblSub.setBounds(0, 68, 460, 20);
         pnlHeader.add(lblSub);
 
         // --- CAMPOS ---
@@ -98,7 +100,7 @@ public class TelaLogin extends JFrame {
         btnEntrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         p.add(btnEntrar);
 
-        JLabel lblSuporte = new JLabel("Suporte Corporativo: suporte@vitaclinica.com", SwingConstants.CENTER);
+        JLabel lblSuporte = new JLabel("Suporte Corporativo: suporte@healthequilibrium.com", SwingConstants.CENTER);
         lblSuporte.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         lblSuporte.setForeground(Color.GRAY);
         lblSuporte.setBounds(0, 480, 460, 20);

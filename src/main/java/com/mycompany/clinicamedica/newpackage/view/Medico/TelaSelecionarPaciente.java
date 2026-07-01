@@ -1,5 +1,6 @@
-package com.mycompany.clinicamedica.newpackage.view;
+package com.mycompany.clinicamedica.newpackage.view.Medico;
 
+import com.mycompany.clinicamedica.newpackage.view.ui.Tema;
 import java.awt.*;
 import java.util.Map;
 import javax.swing.*;
@@ -15,15 +16,15 @@ public class TelaSelecionarPaciente extends JFrame {
         this.nomeMedicoLogado = nomeMedico;
         this.mapaPacientes    = pacientes;
 
-        setTitle("VITA - Seleção de Prontuário");
+        setTitle("Health Equilibrium - Seleção de Prontuário");
         setSize(450, 250);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(false);
 
-        Color marromEscuro = new Color(61, 28, 6);
-        Color corGold      = new Color(193, 158, 103);
-        Color fundoClaro   = new Color(244, 241, 234);
+        Color marromEscuro = Tema.MARROM_ESCURO;
+        Color corGold      = Tema.GOLD;
+        Color fundoClaro   = Tema.FUNDO_CLARO;
 
         JPanel p = new JPanel(null);
         p.setBackground(fundoClaro);

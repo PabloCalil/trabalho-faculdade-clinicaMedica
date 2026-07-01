@@ -33,7 +33,7 @@ public class TelaCadastrarPaciente_dac extends JFrame {
     private final Color corMarromEscuro = new Color(61, 28, 6);
 
     public TelaCadastrarPaciente_dac() {
-        setTitle("🏥 Sistema Clínica Médica - Novo Cadastro");
+        setTitle("Health Equilibrium - Novo Cadastro");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(900, 750);
         setLocationRelativeTo(null);
@@ -196,7 +196,7 @@ public class TelaCadastrarPaciente_dac extends JFrame {
         btnLimpar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         painelForm.add(btnLimpar);
 
-        btnVoltar = new JButton("← Voltar ao Menu");
+        btnVoltar = new JButton("Voltar ao Menu");
         btnVoltar.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnVoltar.setBackground(new Color(180, 70, 70));
         btnVoltar.setForeground(Color.WHITE);

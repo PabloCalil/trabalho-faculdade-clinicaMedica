@@ -4,6 +4,7 @@ import Services.BDSConnection;
 import Services.ConsultaDAO;
 import Services.StatusDAO;
 import com.mycompany.clinicamedica.newpackage.view.TelaLogin;
+import com.mycompany.clinicamedica.newpackage.view.ui.Tema;
 import java.awt.*;
 import java.sql.*;
 import java.util.List;
@@ -20,12 +21,12 @@ public class TelaSecretaria extends JFrame {
     private final ConsultaDAO consultaDAO = new ConsultaDAO();
     private final StatusDAO   statusDAO   = new StatusDAO();
 
-    private static final Color MARROM = new Color(61, 28, 6);
-    private static final Color GOLD   = new Color(193, 158, 103);
-    private static final Color FUNDO  = new Color(244, 241, 234);
+    private static final Color MARROM = Tema.MARROM_ESCURO;
+    private static final Color GOLD   = Tema.GOLD;
+    private static final Color FUNDO  = Tema.FUNDO_CLARO;
 
     public TelaSecretaria() {
-        setTitle("VITA — Painel de Recepção e Atendimento");
+        setTitle("Health Equilibrium — Painel de Recepção e Atendimento");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setMinimumSize(new Dimension(860, 520));
         setSize(1100, 680);
@@ -49,7 +50,7 @@ public class TelaSecretaria extends JFrame {
         header.setBackground(MARROM);
         header.setBorder(new EmptyBorder(18, 40, 18, 40));
 
-        JLabel lblTitulo = new JLabel("Atendimento e Recepção Central — VITA");
+        JLabel lblTitulo = new JLabel("Atendimento e Recepção Central — Health Equilibrium");
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 22));
         lblTitulo.setForeground(Color.WHITE);
         header.add(lblTitulo, BorderLayout.WEST);
@@ -129,7 +130,7 @@ public class TelaSecretaria extends JFrame {
         btnAlterarStatus.setBorder(new LineBorder(GOLD.darker(), 1, true));
         btnAlterarStatus.addActionListener(e -> alterarStatusSelecionado());
 
-        JButton btnAtualizar = new JButton("↻  Atualizar");
+        JButton btnAtualizar = new JButton("Atualizar");
         btnAtualizar.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnAtualizar.setBackground(MARROM);
         btnAtualizar.setForeground(Color.WHITE);

@@ -27,7 +27,7 @@ public class TelaCadastrarConvenio extends JFrame {
     private final Color corMarromEscuro = new Color(61, 28, 6);
 
     public TelaCadastrarConvenio() {
-        setTitle("🏥 Sistema Clínica Médica - Convênios");
+        setTitle("Health Equilibrium - Convênios");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(900, 700);
         setLocationRelativeTo(null);
@@ -158,7 +158,7 @@ public class TelaCadastrarConvenio extends JFrame {
         painelFundo.add(scroll);
 
         // --- Botão Voltar ---
-        btnVoltar = new JButton("← Voltar ao Menu");
+        btnVoltar = new JButton("Voltar ao Menu");
         btnVoltar.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnVoltar.setBackground(corTomMedio.darker());
         btnVoltar.setForeground(Color.WHITE);
